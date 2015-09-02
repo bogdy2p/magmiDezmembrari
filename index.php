@@ -3,6 +3,12 @@
 require_once('parsecsv.lib.php');
 
 
+//Configuration for the script
+  define("MAGENTO_BASE_URL", "/var/www/html/magentostudy/");
+  define("MAGMI_BASE_URL", "/var/www/html/magentostudy/magimprt/");
+  define("MAGENTO_VAR_IMPORT_DIR", "/var/www/html/magentostudy/var/import/");
+
+
 class PbcMagmi {
 
   public $columns_to_be_added = array(
@@ -45,7 +51,6 @@ class PbcMagmi {
     $this->column_titles = $this->csv->titles;
     $this->csv_data = $this->csv->data;
     $this->output_data = array();
- 
   }
 
 //End of construct Function
@@ -68,41 +73,38 @@ class PbcMagmi {
   function expandExplanaitionField($data_array) {
     foreach ($data_array as $key => $value) {
 
+      $year = "NULL";
+      $capacity = "NULL";
+      $power = "NULL";
+      $horsepower = "NULL";
+      $enginecode = "NULL";
 
-      $yearmatch = preg_match("(((19|20)\d{2})|((19|20)\d{2}\.))", $value['EXPL'], $yearmatches);
-      if ($yearmatch) {
-        $year = substr($yearmatches[0], 0, 4);
-      }
-      else {
-        $year = "NULL";
-      }
-      $capacitymatch = preg_match("([0-9]{3,5}CC)", $value['EXPL'], $capacitymatches);
-      if ($capacitymatch) {
-        $capacity = $capacitymatches[0];
-      }
-      else {
-        $capacity = "NULL";
-      }
-      $powermatch = preg_match("([0-9]{1,4}KW)", $value['EXPL'], $powermatches);
-      if ($powermatch) {
-        $power = $powermatches[0];
-      }
-      else {
-        $power = "NULL";
-      }
-      $horsepowermatch = preg_match("([0-9]{1,4}CP)", $value['EXPL'], $horsepowermatches);
-      if ($horsepowermatch) {
-        $horsepower = $horsepowermatches[0];
-      }
-      else {
-        $horsepower = "NULL";
-      }
-      $enginecodematch = preg_match("([A-Z0-9]{12,25})", $value['EXPL'], $enginecodematches);
-      if ($enginecodematch) {
-        $enginecode = $enginecodematches[0];
-      }
-      else {
-        $enginecode = "NULL";
+
+      if (isset($value['EXPL'])) {
+        $yearmatch = preg_match("(((19|20)\d{2})|((19|20)\d{2}\.))", $value['EXPL'], $yearmatches);
+        if ($yearmatch) {
+          $year = substr($yearmatches[0], 0, 4);
+        }
+
+        $capacitymatch = preg_match("([0-9]{3,5}CC)", $value['EXPL'], $capacitymatches);
+        if ($capacitymatch) {
+          $capacity = $capacitymatches[0];
+        }
+
+        $powermatch = preg_match("([0-9]{1,4}KW)", $value['EXPL'], $powermatches);
+        if ($powermatch) {
+          $power = $powermatches[0];
+        }
+
+        $horsepowermatch = preg_match("([0-9]{1,4}CP)", $value['EXPL'], $horsepowermatches);
+        if ($horsepowermatch) {
+          $horsepower = $horsepowermatches[0];
+        }
+
+        $enginecodematch = preg_match("([A-Z0-9]{12,25})", $value['EXPL'], $enginecodematches);
+        if ($enginecodematch) {
+          $enginecode = $enginecodematches[0];
+        }
       }
 
       if ($value['ID'] != "") {
@@ -148,7 +150,6 @@ class PbcMagmi {
         $output_csv_data['rulaj_kilometri'] = '50-100000';
         $output_csv_data['tip_combustibil'] = 'Benzina';
 
-
         $this->output_data[] = $output_csv_data;
       }
     }
@@ -158,37 +159,35 @@ class PbcMagmi {
 //End of expandExplanaitionField Function
 
   function saveTheOutput($filename, $output_data) {
-    if($output_data != NULL){
-      // var_dump($output_data);
-    if ($this->output_data[0] != NULL) {
-      $outputCSV = new parseCSV();
-      $newcolumns = array_keys($this->output_data[0]);
-      $outputCSV->titles = $newcolumns;
-      $outputCSV->data = $this->output_data;
-      $outputCSV->save($filename, $this->output_data);
-      return $this;
+    if ($output_data != NULL) {
+      if ($this->output_data[0] != NULL) {
+        $outputCSV = new parseCSV();
+        $newcolumns = array_keys($this->output_data[0]);
+        $outputCSV->titles = $newcolumns;
+        $outputCSV->data = $this->output_data;
+        $outputCSV->save($filename, $this->output_data);
+        echo "Output file succesfully saved in : ";
+        printf("\n");
+        echo $filename.' file.';
+        return $this;
       }
     }
   }
 
-  function modifyFileMode($file){
-      chmod($file, 0775);
+  function modifyFileMode($file) {
+    chmod($file, 0775);
   }
 
   //End of saveTheOutput Function
 }
 
-
-$test = new PbcMagmi(__DIR__.'/input.csv');
+$test = new PbcMagmi(__DIR__ . '/input.csv');
 
 $test->addColumnsToTitles($test->columns_to_be_added);
-
 $test->addTestDefaultColumnsToTitles($test->test_default_columns_for_magmi);
 $output_data = $test->expandExplanaitionField($test->csv->data);
 // $test->saveTheOutput(__DIR__.'/outputfile.csv', $output_data);
-$test->saveTheOutput('/var/www/html/magentostudy/var/import/outputfile.csv',$output_data);
-$test->modifyFileMode('/var/www/html/magentostudy/var/import/outputfile.csv');
-
-
+$test->saveTheOutput(MAGENTO_VAR_IMPORT_DIR.'outputfile.csv', $output_data);
+$test->modifyFileMode(MAGENTO_VAR_IMPORT_DIR.'outputfile.csv');
 
 ?>
