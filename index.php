@@ -4,10 +4,9 @@ require_once('parsecsv.lib.php');
 
 
 //Configuration for the script
-  define("MAGENTO_BASE_URL", "/var/www/html/magentostudy/");
-  define("MAGMI_BASE_URL", "/var/www/html/magentostudy/magimprt/");
-  define("MAGENTO_VAR_IMPORT_DIR", "/var/www/html/magentostudy/var/import/");
-
+define("MAGENTO_BASE_URL", "/var/www/html/magentostudy/");
+define("MAGMI_BASE_URL", "/var/www/html/magentostudy/magimprt/");
+define("MAGENTO_VAR_IMPORT_DIR", "/var/www/html/magentostudy/var/import/");
 
 class PbcMagmi {
 
@@ -47,7 +46,6 @@ class PbcMagmi {
     $this->csv = new parseCSV($this->inputFileName);
     $this->csv->auto($this->inputFileName);
 
-
     $this->column_titles = $this->csv->titles;
     $this->csv_data = $this->csv->data;
     $this->output_data = array();
@@ -60,7 +58,6 @@ class PbcMagmi {
     }
     return $this;
   }
-
   //End of addColumnsToTitles Function
 
   function addTestDefaultColumnsToTitles($test_default_columns) {
@@ -145,15 +142,45 @@ class PbcMagmi {
         $output_csv_data['image'] = '';
         $output_csv_data['media_gallery'] = '';
         $output_csv_data['att_amz_title'] = '';
-        $output_csv_data['decor_type'] = '1400-1600cmc';
-        $output_csv_data['marca_masina'] = 'Dacia';
-        $output_csv_data['rulaj_kilometri'] = '50-100000';
-        $output_csv_data['tip_combustibil'] = 'Benzina';
+        $output_csv_data['decor_type'] = $this->randomizeCustomAttributeValues('decor_type');
+        $output_csv_data['marca_masina'] = $this->randomizeCustomAttributeValues('marca_masina');
+        $output_csv_data['rulaj_kilometri'] = $this->randomizeCustomAttributeValues('rulaj_kilometri');
+        $output_csv_data['tip_combustibil'] = $this->randomizeCustomAttributeValues('tip_combustibil');
 
         $this->output_data[] = $output_csv_data;
       }
     }
     return $this;
+  }
+
+  function randomizeCustomAttributeValues($attribute_name) {
+
+    $random_value = rand(0, 10);
+    $decor_types = array(
+      '1000-1400cmc', '1400-1600cmc', '1600-2000cmc', '2000-2600cmc',
+    );
+    $marci_masina = array(
+      'Volkswagen', 'Dacia', 'BMW', 'Honda', 'Renault',
+    );
+    $rulaje_kilometri = array(
+      '0-20000', '>250000', '20-50000', '50-100000', '100-150000', '150-250000',
+    );
+    $tip_combustibil = array(
+      'Benzina', 'Diesel', 'GPL', 'Electric',
+    );
+    $all_arrays = array('decor_type', 'marca_masina', 'rulaj_kilometri', 'tip_combustibil');
+
+    $all_arrays['decor_type'] = $decor_types;
+    $all_arrays['marca_masina'] = $marci_masina;
+    $all_arrays['rulaj_kilometri'] = $rulaje_kilometri;
+    $all_arrays['tip_combustibil'] = $tip_combustibil;
+
+    $selected = $all_arrays[$attribute_name];
+    $selected_length = count($selected);
+    $random_choice_number = $random_value % $selected_length;
+    $actual_random_choice = $selected[$random_choice_number];
+
+    return $actual_random_choice;
   }
 
 //End of expandExplanaitionField Function
@@ -168,7 +195,7 @@ class PbcMagmi {
         $outputCSV->save($filename, $this->output_data);
         echo "Output file succesfully saved in : ";
         printf("\n");
-        echo $filename.' file.';
+        echo $filename . ' file.';
         return $this;
       }
     }
@@ -186,8 +213,6 @@ $test = new PbcMagmi(__DIR__ . '/input.csv');
 $test->addColumnsToTitles($test->columns_to_be_added);
 $test->addTestDefaultColumnsToTitles($test->test_default_columns_for_magmi);
 $output_data = $test->expandExplanaitionField($test->csv->data);
-// $test->saveTheOutput(__DIR__.'/outputfile.csv', $output_data);
-$test->saveTheOutput(MAGENTO_VAR_IMPORT_DIR.'outputfile.csv', $output_data);
-$test->modifyFileMode(MAGENTO_VAR_IMPORT_DIR.'outputfile.csv');
-
+$test->saveTheOutput(MAGENTO_VAR_IMPORT_DIR . 'outputfile.csv', $output_data);
+$test->modifyFileMode(MAGENTO_VAR_IMPORT_DIR . 'outputfile.csv');
 ?>
