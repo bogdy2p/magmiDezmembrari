@@ -1,7 +1,7 @@
 <?php
 
 require_once('parsecsv.lib.php');
-ini_set('display_errors', 1);
+// ini_set('display_errors', 1);
 
 class PbcMagmi {
 
@@ -38,11 +38,14 @@ class PbcMagmi {
 
   public function __construct($inputFilename) {
     $this->inputFileName = $inputFilename;
-    $this->csv = new parseCSV();
+    $this->csv = new parseCSV($this->inputFileName);
     $this->csv->auto($this->inputFileName);
+
+
     $this->column_titles = $this->csv->titles;
     $this->csv_data = $this->csv->data;
     $this->output_data = array();
+ 
   }
 
 //End of construct Function
@@ -64,7 +67,6 @@ class PbcMagmi {
 
   function expandExplanaitionField($data_array) {
     foreach ($data_array as $key => $value) {
-
 
 
       $yearmatch = preg_match("(((19|20)\d{2})|((19|20)\d{2}\.))", $value['EXPL'], $yearmatches);
@@ -161,7 +163,8 @@ class PbcMagmi {
 //End of expandExplanaitionField Function
 
   function saveTheOutput($filename, $output_data) {
-
+    if($output_data != NULL){
+      // var_dump($output_data);
     if ($this->output_data[0] != NULL) {
       $outputCSV = new parseCSV();
       $newcolumns = array_keys($this->output_data[0]);
@@ -169,15 +172,17 @@ class PbcMagmi {
       $outputCSV->data = $this->output_data;
       $outputCSV->save($filename, $this->output_data);
       return $this;
+      }
     }
   }
 
   //End of saveTheOutput Function
 }
 
-$test = new PbcMagmi('input.csv');
+
+$test = new PbcMagmi(__DIR__.'/input.csv');
 $test->addColumnsToTitles($test->columns_to_be_added);
 $test->addTestDefaultColumnsToTitles($test->test_default_columns_for_magmi);
 $output_data = $test->expandExplanaitionField($test->csv->data);
-$test->saveTheOutput('asdoutputfilename.csv', $output_data);
+$test->saveTheOutput(__DIR__.'/outputfile.csv', $output_data);
 ?>
