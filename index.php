@@ -1,7 +1,7 @@
 <?php
 
 require_once('parsecsv.lib.php');
-// ini_set('display_errors', 1);
+
 
 class PbcMagmi {
 
@@ -124,8 +124,6 @@ class PbcMagmi {
         $output_csv_data['engcode'] = $value['ENGCODE'];
         $output_csv_data['is_in_stock'] = $value['PRODUS_ACTIV'];
 
-
-
         //THIS WILL BE THE DEFAULT VALUES HARDCODED BECAUSE THEY DONT EXIST
 
         $output_csv_data['attribute_set'] = 'Bloc Motor';
@@ -151,9 +149,6 @@ class PbcMagmi {
         $output_csv_data['tip_combustibil'] = 'Benzina';
 
 
-
-
-
         $this->output_data[] = $output_csv_data;
       }
     }
@@ -177,11 +172,7 @@ class PbcMagmi {
   }
 
   function modifyFileMode($file){
-    $fp = fopen($file, 'w');
-    if($fp) {
       chmod($file, 0775);
-    }
-
   }
 
   //End of saveTheOutput Function
@@ -194,7 +185,7 @@ $test->addColumnsToTitles($test->columns_to_be_added);
 
 $test->addTestDefaultColumnsToTitles($test->test_default_columns_for_magmi);
 $output_data = $test->expandExplanaitionField($test->csv->data);
-$test->saveTheOutput(__DIR__.'/outputfile.csv', $output_data);
+// $test->saveTheOutput(__DIR__.'/outputfile.csv', $output_data);
 $test->saveTheOutput('/var/www/html/magentostudy/var/import/outputfile.csv',$output_data);
 $test->modifyFileMode('/var/www/html/magentostudy/var/import/outputfile.csv');
 
