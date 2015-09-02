@@ -176,13 +176,28 @@ class PbcMagmi {
     }
   }
 
+  function modifyFileMode($file){
+    $fp = fopen($file, 'w');
+    if($fp) {
+      chmod($file, 0775);
+    }
+
+  }
+
   //End of saveTheOutput Function
 }
 
 
 $test = new PbcMagmi(__DIR__.'/input.csv');
+
 $test->addColumnsToTitles($test->columns_to_be_added);
+
 $test->addTestDefaultColumnsToTitles($test->test_default_columns_for_magmi);
 $output_data = $test->expandExplanaitionField($test->csv->data);
 $test->saveTheOutput(__DIR__.'/outputfile.csv', $output_data);
+$test->saveTheOutput('/var/www/html/magentostudy/var/import/outputfile.csv',$output_data);
+$test->modifyFileMode('/var/www/html/magentostudy/var/import/outputfile.csv');
+
+
+
 ?>
