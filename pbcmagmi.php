@@ -23,7 +23,8 @@ define("MAGMI_BASE_URL", "/var/www/html/magentostudy/magimprt/");
 define("MAGENTO_VAR_IMPORT_DIR", "/var/www/html/magentostudy/var/import/");
 
 
-$testingfile1 = false;
+
+$testingfile1 = true;
 if ($testingfile1) {
   require_once('testingfile1.php');
 }
@@ -70,6 +71,14 @@ if ($testingfile1) {
 
 class PbcMagmi {
 
+  public $ftp_config = array(
+    'local_file' => 'local.csv',
+    'server_file' => 'input.csv',
+    'ftp_server' => 'timedudeapi.cust21.reea.net',
+    'ftp_username' => 'devel',
+    'ftp_user_pass' => 'RkTY9H',
+    'ftp_file_path' => 'www/timedudeapi.cust21.reea.net',
+  );
   public $columns_to_be_added = array(
     'YEAR',
     'CCM',
@@ -355,8 +364,23 @@ class PbcMagmi {
   }
 
   //End of saveTheOutput Function
+  
+  function getCsvInputFromFtp($ftp_config) {
 
+    $conn_id = ftp_connect($ftp_config['ftp_server']);
+    $login_result = ftp_login($conn_id, $ftp_config['ftp_username'], $ftp_config['ftp_user_pass']);
 
+    if (ftp_chdir($conn_id, $ftp_config['ftp_file_path'])) {
+      echo "Ftp dir found. <br />";
+    }
+    $get_csv_file = ftp_get($conn_id, $ftp_config['local_file'], $ftp_config['server_file'], FTP_BINARY);
+    if ($get_csv_file) {
+      ftp_close($conn_id);
+      return $ftp_config['local_file'];
+    }
+    ftp_close($conn_id);
+    return false;
+  }
 
   function setUnavailableItemsAsHiddenInMagento() {
 
@@ -384,7 +408,10 @@ class PbcMagmi {
 
 }
 
-$test = new PbcMagmi(__DIR__ . '/input.csv');
+
+
+//$test = new PbcMagmi(__DIR__ . '/input.csv');
+$test = new PbcMagmi(getCsvInputFromFtp());
 
 $test->addColumnsToTitles($test->columns_to_be_added);
 $test->addTestDefaultColumnsToTitles($test->test_default_columns_for_magmi);
