@@ -4,7 +4,7 @@ require_once('parsecsv.lib.php');
 
 $testing_mode = true;
 $generate_values = false;
-$number_to_generate = 100;
+$number_to_generate = 1234;
 
 
 if ($testing_mode) {
@@ -12,6 +12,9 @@ if ($testing_mode) {
   ini_set('display_errors', 1);
   error_reporting(E_ALL);
 }
+
+
+
 
 
 //Configuration for the script
@@ -25,49 +28,45 @@ if ($testingfile1) {
   require_once('testingfile1.php');
 }
 
-
-
-
-
-
-$temp = false;
-if ($temp) {
-  ini_set('display_errors', 1);
-  error_reporting(E_ALL);
-  require_once MAGENTO_BASE_URL . 'app/Mage.php';
-
-  Mage::app();
-  $attributeSetCollection = Mage::getResourceModel('eav/entity_attribute_set_collection')->load();
-
-  $custom_attribute_sets = array();
-
-  echo"<pre>";
-  echo"<h2>Magento current attribute sets and their id's</h2>";
-  foreach ($attributeSetCollection as $id => $attributeSet) {
-    $entityTypeId = $attributeSet->getEntityTypeId();
-    $name = $attributeSet->getAttributeSetName();
-    if ($name != "Default") {
-      print_r("ATTRIBUTE SET :" . $name . " - " . $id);
-      echo"<br />";
-      $custom_attribute_sets[$id] = $name;
-    }
-  }
-  print_r($custom_attribute_sets);
-
-
-  foreach ($custom_attribute_sets as $key => $value) {
-    print_r("Showing attributes in set named ");
-    print_r($value);
-    print_r("<br />");
-    // $items1 = Mage::getModel('catalog/product_attribute_set_api')->items($key);
-    $attributes_in_set = Mage::getModel('catalog/product_attribute_api')->items($key);
-
-    var_dump($attributes_in_set);
-  }
-
-  echo"<br />";
-  die('And now script died. RIP !');
-}
+//
+//$temp = false;
+//if ($temp) {
+//  ini_set('display_errors', 1);
+//  error_reporting(E_ALL);
+//  require_once MAGENTO_BASE_URL . 'app/Mage.php';
+//
+//  Mage::app();
+//  $attributeSetCollection = Mage::getResourceModel('eav/entity_attribute_set_collection')->load();
+//
+//  $custom_attribute_sets = array();
+//
+//  echo"<pre>";
+//  echo"<h2>Magento current attribute sets and their id's</h2>";
+//  foreach ($attributeSetCollection as $id => $attributeSet) {
+//    $entityTypeId = $attributeSet->getEntityTypeId();
+//    $name = $attributeSet->getAttributeSetName();
+//    if ($name != "Default") {
+//      print_r("ATTRIBUTE SET :" . $name . " - " . $id);
+//      echo"<br />";
+//      $custom_attribute_sets[$id] = $name;
+//    }
+//  }
+//  print_r($custom_attribute_sets);
+//
+//
+//  foreach ($custom_attribute_sets as $key => $value) {
+//    print_r("Showing attributes in set named ");
+//    print_r($value);
+//    print_r("<br />");
+//    // $items1 = Mage::getModel('catalog/product_attribute_set_api')->items($key);
+//    $attributes_in_set = Mage::getModel('catalog/product_attribute_api')->items($key);
+//
+//    var_dump($attributes_in_set);
+//  }
+//
+//  echo"<br />";
+//  die('And now script died. RIP !');
+//}
 
 class PbcMagmi {
 
@@ -196,6 +195,15 @@ class PbcMagmi {
         $output_csv_data['manage_stock'] = 1;
         $output_csv_data['use_config_manage_stock'] = 1;
         $output_csv_data['status'] = 1;
+        //Override Manage Stock And Config Manage Stock
+        // If Product Is Not In Hydra Stock
+        if (($value['STOC_CURENT'] == 0) || ($value['STOC_CURENT'] == NULL)) {
+//          print_r($value['STOC_CURENT']);
+          $output_csv_data['manage_stock'] = 0;
+          $output_csv_data['use_config_manage_stock'] = 0;
+          $output_csv_data['status'] = 3;
+        }
+
         $output_csv_data['visibility'] = 'Catalog, Search';
         $output_csv_data['categories'] = 'Motor + Tansmisie/Piese Motor';
         $output_csv_data['tax_class_id'] = 'None';
@@ -268,25 +276,30 @@ class PbcMagmi {
     foreach (Mage::getModel('catalog/product')->getCollection() as $product) {
       $existing_product_skus_in_magento[] = $product->getSku();
     }
-    return $existing_product_skus_in_magento;    
+    return $existing_product_skus_in_magento;
   }
-  
-  function getExistingProductSkusInParsedCSV(){
+
+  function getExistingProductSkusInParsedCSV() {
     $existing_product_skus_in_parsed_csv = array();
-    foreach ($this->csv->data as $csv_row){ 
+    foreach ($this->csv->data as $csv_row) {
       $existing_product_skus_in_parsed_csv[] = $csv_row['ID'];
-    }   
+    }
     return $existing_product_skus_in_parsed_csv;
   }
-  
-  function getDifferenceBetweenCSVandMagentoDB(){
-    
-      $db_array_items = $this->getExistingProductSkusInMagento();
-      $csv_array_items = $this->getExistingProductSkusInParsedCSV();
-      
-      print_r(count($db_array_items));
-      print_r(count($csv_array_items));
-    
+
+  function getDifferenceBetweenCSVandMagentoDB() {
+
+    $db_array_items = $this->getExistingProductSkusInMagento();
+    $csv_array_items = $this->getExistingProductSkusInParsedCSV();
+
+    $difference = count($db_array_items) - count($csv_array_items);
+    $array_difference = array();
+
+    if ($difference > 0) {
+      $array_difference = array_diff($db_array_items, $csv_array_items);
+      return $array_difference;
+    }
+    return null;
   }
 
   function randomizeCustomAttributeValues($attribute_name) {
@@ -340,15 +353,38 @@ class PbcMagmi {
   function modifyFileMode($file) {
     chmod($file, 0775);
   }
+
   //End of saveTheOutput Function
+
+
+
+  function setUnavailableItemsAsHiddenInMagento() {
+
+    $items_to_be_set_with_stock0 = $this->getDifferenceBetweenCSVandMagentoDB();
+
+    if ($items_to_be_set_with_stock0) {
+      foreach ($items_to_be_set_with_stock0 as $item_unavaillable) {
+        $product = Mage::getModel('catalog/product');
+        $id = Mage::getModel('catalog/product')->getResource()->getIdBySku($item_unavaillable);
+        if ($id) {
+          $stock_item = Mage::getModel('cataloginventory/stock_item')->loadByProduct($id);
+          $stock_item->setData('is_in_stock', 0);
+          $stock_item->setData('manage_stock', 0);
+          try {
+            $stock_item->save();
+          }
+          catch (Exception $ex) {
+            echo "{$ex}";
+          }
+        }
+      }
+      echo "\n" . count($items_to_be_set_with_stock0) . " Items have been set as not_in_stock (is_in_stock = 0) \n";
+    }
+  }
+
 }
 
 $test = new PbcMagmi(__DIR__ . '/input.csv');
-
-//print_r($test->getExistingProductSkusInMagento());
-
-//print_r(count($test->csv->data));
-//die();
 
 $test->addColumnsToTitles($test->columns_to_be_added);
 $test->addTestDefaultColumnsToTitles($test->test_default_columns_for_magmi);
@@ -359,12 +395,10 @@ if ($testing_mode) {
 }
 
 
-$test->getDifferenceBetweenCSVandMagentoDB();
-
-
-
-die();
 $output_data = $test->expandExplanaitionField($test->csv->data);
 $test->saveTheOutput(MAGENTO_VAR_IMPORT_DIR . 'outputfile.csv', $output_data);
 $test->modifyFileMode(MAGENTO_VAR_IMPORT_DIR . 'outputfile.csv');
+
+echo "\n Starting to verify each unavaillable product... \n (This might take up-to 10 minutes)...";
+$test->setUnavailableItemsAsHiddenInMagento();
 ?>

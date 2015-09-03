@@ -21,3 +21,8 @@ echo " IT WORKS";
 
 echo "<br /><br /><br /><br />";
 die('WE DIED IN TESTFILE1.php'); 
+
+
+
+
+//TODAY FTP PWD : RkTY9H
