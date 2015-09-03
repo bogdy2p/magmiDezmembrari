@@ -2,57 +2,73 @@
 
 require_once('parsecsv.lib.php');
 
+$testing_mode = true;
+$generate_values = false;
+$number_to_generate = 100;
+
+
+if ($testing_mode) {
+  ini_set('memory_limit', '1024M');
+  ini_set('display_errors', 1);
+  error_reporting(E_ALL);
+}
+
 
 //Configuration for the script
 define("MAGENTO_BASE_URL", "/var/www/html/magentostudy/");
 define("MAGMI_BASE_URL", "/var/www/html/magentostudy/magimprt/");
 define("MAGENTO_VAR_IMPORT_DIR", "/var/www/html/magentostudy/var/import/");
 
+
+$testingfile1 = false;
+if ($testingfile1) {
+  require_once('testingfile1.php');
+}
+
+
+
+
+
+
 $temp = false;
-if($temp){
-ini_set('display_errors', 1);
-error_reporting(E_ALL);
-require_once MAGENTO_BASE_URL.'app/Mage.php';
+if ($temp) {
+  ini_set('display_errors', 1);
+  error_reporting(E_ALL);
+  require_once MAGENTO_BASE_URL . 'app/Mage.php';
 
-Mage::app();
-$attributeSetCollection = Mage::getResourceModel('eav/entity_attribute_set_collection') ->load();
+  Mage::app();
+  $attributeSetCollection = Mage::getResourceModel('eav/entity_attribute_set_collection')->load();
 
-$custom_attribute_sets = array();
+  $custom_attribute_sets = array();
 
-echo"<pre>";
-echo"<h2>Magento current attribute sets and their id's</h2>";
-foreach ($attributeSetCollection as $id=>$attributeSet) {
-  $entityTypeId = $attributeSet->getEntityTypeId();
-  $name = $attributeSet->getAttributeSetName();
-  if ($name != "Default"){
-  print_r("ATTRIBUTE SET :".$name." - ".$id);
-  echo"<br />";  
-  $custom_attribute_sets[$id] = $name;
+  echo"<pre>";
+  echo"<h2>Magento current attribute sets and their id's</h2>";
+  foreach ($attributeSetCollection as $id => $attributeSet) {
+    $entityTypeId = $attributeSet->getEntityTypeId();
+    $name = $attributeSet->getAttributeSetName();
+    if ($name != "Default") {
+      print_r("ATTRIBUTE SET :" . $name . " - " . $id);
+      echo"<br />";
+      $custom_attribute_sets[$id] = $name;
+    }
   }
+  print_r($custom_attribute_sets);
+
+
+  foreach ($custom_attribute_sets as $key => $value) {
+    print_r("Showing attributes in set named ");
+    print_r($value);
+    print_r("<br />");
+    // $items1 = Mage::getModel('catalog/product_attribute_set_api')->items($key);
+    $attributes_in_set = Mage::getModel('catalog/product_attribute_api')->items($key);
+
+    var_dump($attributes_in_set);
+  }
+
+  echo"<br />";
+  die('And now script died. RIP !');
 }
-print_r($custom_attribute_sets);
 
-
-foreach($custom_attribute_sets as $key=> $value){
-  print_r("Showing attributes in set named ");
-  print_r($value);
-  print_r("<br />");
-  // $items1 = Mage::getModel('catalog/product_attribute_set_api')->items($key);
-  $attributes_in_set = Mage::getModel('catalog/product_attribute_api')->items($key);
- 
- 
- var_dump($attributes_in_set);
- die();
-}
-
-
-
-
-
-
-echo"<br />";
-die('And now script died. RIP !');
-}
 class PbcMagmi {
 
   public $columns_to_be_added = array(
@@ -103,6 +119,7 @@ class PbcMagmi {
     }
     return $this;
   }
+
   //End of addColumnsToTitles Function
 
   function addTestDefaultColumnsToTitles($test_default_columns) {
@@ -198,6 +215,80 @@ class PbcMagmi {
     return $this;
   }
 
+  function addrowstodata($number) {
+
+    $minimum = 700000;
+    $maximum = 700000 + $number;
+
+    for ($nextid = $minimum; $nextid < $maximum; $nextid++) {
+
+      $newRow = array(
+        'ID' => $nextid,
+        'ID_UM_MINIMA' => NULL,
+        'COD_INTERN' => NULL,
+        'DENUMIRE' => 'DenumireProdus' . $nextid,
+        'PRET_LISTA' => rand(1, 1000),
+        'PRET_VANZ_MAG' => '',
+        'GRAMAJ_UNITATEA_MINIMA' => '',
+        'ORDINE_AFISARE' => '',
+        'XDISC_PROMO' => '',
+        'XTVA' => '',
+        'XADAOS' => '',
+        'PRODUS_ACTIV' => 1,
+        'ACOPERIRE' => '18',
+        'COD_BARE' => '',
+        'COMENT' => '',
+        'EXPL' => '2001,2500CC,55KW,66CP,WVWZZZ1HZ' . $nextid,
+        'PRET_LISTA_EURO' => '',
+        'PAGINA_CATALOG' => '',
+        'LINK_DISK' => '',
+        'FIELD_1' => '',
+        'FIELD_2' => '',
+        'STOC_COMANDAT_CLN' => '',
+        'STOC_COMANDAT_FUR' => '',
+        'STOC_CURENT' => rand(1, 10),
+        'STOC_REZERVAT' => '',
+        'STOC_ASIGURAT' => '',
+        'PARENT_ID' => '',
+        'SOURCE_ID' => '',
+      );
+
+      $this->csv->data[] = $newRow;
+    }
+
+    return $this;
+  }
+
+  function getExistingProductSkusInMagento() {
+    //Check if mage.app
+    require_once MAGENTO_BASE_URL . 'app/Mage.php';
+    Mage::app();
+    $existing_product_skus_in_magento = array();
+
+    foreach (Mage::getModel('catalog/product')->getCollection() as $product) {
+      $existing_product_skus_in_magento[] = $product->getSku();
+    }
+    return $existing_product_skus_in_magento;    
+  }
+  
+  function getExistingProductSkusInParsedCSV(){
+    $existing_product_skus_in_parsed_csv = array();
+    foreach ($this->csv->data as $csv_row){ 
+      $existing_product_skus_in_parsed_csv[] = $csv_row['ID'];
+    }   
+    return $existing_product_skus_in_parsed_csv;
+  }
+  
+  function getDifferenceBetweenCSVandMagentoDB(){
+    
+      $db_array_items = $this->getExistingProductSkusInMagento();
+      $csv_array_items = $this->getExistingProductSkusInParsedCSV();
+      
+      print_r(count($db_array_items));
+      print_r(count($csv_array_items));
+    
+  }
+
   function randomizeCustomAttributeValues($attribute_name) {
 
     $random_value = rand(0, 10);
@@ -205,7 +296,7 @@ class PbcMagmi {
       '1000-1400cmc', '1400-1600cmc', '1600-2000cmc', '2000-2600cmc',
     );
     $marci_masina = array(
-      'Volkswagen', 'Dacia', 'BMW', 'Honda', 'Renault','Trabant'
+      'Volkswagen', 'Dacia', 'BMW', 'Honda', 'Renault', 'Trabant'
     );
     $rulaje_kilometri = array(
       '0-20000', '>250000', '20-50000', '50-100000', '100-150000', '150-250000',
@@ -249,14 +340,30 @@ class PbcMagmi {
   function modifyFileMode($file) {
     chmod($file, 0775);
   }
-
   //End of saveTheOutput Function
 }
 
 $test = new PbcMagmi(__DIR__ . '/input.csv');
 
+//print_r($test->getExistingProductSkusInMagento());
+
+//print_r(count($test->csv->data));
+//die();
+
 $test->addColumnsToTitles($test->columns_to_be_added);
 $test->addTestDefaultColumnsToTitles($test->test_default_columns_for_magmi);
+if ($testing_mode) {
+  if ($generate_values) {
+    $test->addrowstodata($number_to_generate);
+  }
+}
+
+
+$test->getDifferenceBetweenCSVandMagentoDB();
+
+
+
+die();
 $output_data = $test->expandExplanaitionField($test->csv->data);
 $test->saveTheOutput(MAGENTO_VAR_IMPORT_DIR . 'outputfile.csv', $output_data);
 $test->modifyFileMode(MAGENTO_VAR_IMPORT_DIR . 'outputfile.csv');
