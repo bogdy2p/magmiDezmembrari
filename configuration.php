@@ -4,7 +4,7 @@
  * PbcMagmi Script Configuration
  */
 $config = array(
-  'script_verbose' => true,
+  'script_verbose' => false,
   'days_to_keep_log_files' => 2,
   'testing_mode' => true,
   'override_php_default_limits' => false,
@@ -13,6 +13,7 @@ $config = array(
   'memory_limit' => '1024M',
   'max_execution_time' => 3600,
   'display_errors' => 1,
+  'outputfile_filename_ext' => "outputfile.csv",
 );
 
 
@@ -22,8 +23,9 @@ $config = array(
 define("WEB_ROOT_DIRECTORY","/var/www/html/");
 define("MAGENTO_BASE_URL", WEB_ROOT_DIRECTORY."magentostudy/");
 define("MAGMI_BASE_URL", MAGENTO_BASE_URL."magimprt/");
-define("INPUTS_FOLDER", __DIR__ . '/files_logs/inputs_from_ftp/');
-define("OUTPUTS_FOLDER", __DIR__ . '/files_logs/csv_outputs/');
+define("MAGENTO_VAR_IMPORT_FOLDER",MAGENTO_BASE_URL."var/import/");
+define("INPUTS_FOLDER", __DIR__ . '/logs/inputs_from_ftp/');
+define("OUTPUTS_FOLDER", __DIR__ . '/logs/csv_outputs/');
 define("CURRENT_DATE", time());
 
 

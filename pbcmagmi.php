@@ -334,9 +334,12 @@ class PbcMagmi {
         $outputCSV->titles = $newcolumns;
         $outputCSV->data = $this->output_data;
         $outputCSV->save($filename, $this->output_data);
-        echo "Output file succesfully saved in : ";
-        printf("\n");
-        echo $filename . ' file.';
+        if ($this->config['script_verbose']) {
+          echo "Output file succesfully saved in : ";
+          printf("\n");
+          echo $filename . ' file.';
+          printf("\n");
+        }
         return $this;
       }
     }
@@ -493,28 +496,46 @@ class PbcMagmi {
 
 }
 
+runPbcMagmiScript($config);
+
 /**
  * Actually Start Running The Script
+ * 1) Instantiate the Class
+ * 2) Add the new columns for the output csv
+ * 3) Modify / Expand the EXPL data into the new columns
+ * 4) Save the outputfile in the logs folder
+ * 5) Update/Save the outputfile into the script folder to be able to read it from bash
+ * 6) Modify the file's permissions
+ * 7) For all the items , chech that they're still availlable in Hydra , or else disable them in Magento too.
+ * 8) Check for log files older than $config['days_to_keep_log_files'] , and if any , delete them.
+ * 
  */
-$test = new PbcMagmi($config);
-$test->addColumnsToTitles($test->columns_to_be_added);
-$test->addTestDefaultColumnsToTitles($test->test_default_columns_for_magmi);
-if ($config['testing_mode']) {
-  if ($config['generate_random_values']) {
-    $test->addrowstodata($config['number_to_generate']);
+function runPbcMagmiScript($config) {
+
+  $test = new PbcMagmi($config);
+  $test->addColumnsToTitles($test->columns_to_be_added);
+  $test->addTestDefaultColumnsToTitles($test->test_default_columns_for_magmi);
+  if ($config['testing_mode']) {
+    if ($config['generate_random_values']) {
+      $test->addrowstodata($config['number_to_generate']);
+    }
   }
+
+  $output_data = $test->expandExplanaitionField($test->csv->data);
+  //Save the LOG FILE
+  $test->saveTheOutput(OUTPUTS_FOLDER . 'Output_' . CURRENT_DATE . '.csv', $output_data);
+  //Update the IMPORTFILE
+  $test->saveTheOutput(MAGENTO_VAR_IMPORT_FOLDER . $config['outputfile_filename_ext'], $output_data);
+
+  //If any fail , should modify the file mode for the other output too.
+  $test->modifyFileMode(OUTPUTS_FOLDER . 'Output_' . CURRENT_DATE . '.csv');
+  if ($config['script_verbose']) {
+    echo "\n\nStarting to verify each unavaillable product... \n(This might take up-to 10 minutes)...";
+  }
+
+//  $test->setUnavailableItemsAsHiddenInMagento();
+//  $test->setUnavailableItemsDisabledInMagento();
+//  $test->deleteLogsOlderThanXDays($config['days_to_keep_log_files']);
 }
 
-
-$output_data = $test->expandExplanaitionField($test->csv->data);
-$test->saveTheOutput(OUTPUTS_FOLDER . 'Output_' . CURRENT_DATE . '.csv', $output_data);
-$test->modifyFileMode(OUTPUTS_FOLDER . 'Output_' . CURRENT_DATE . '.csv');
-if ($config['script_verbose']) {
-  echo "\n\nStarting to verify each unavaillable product... \n(This might take up-to 10 minutes)...";
-}
-$test->setUnavailableItemsAsHiddenInMagento();
-
-$test->setUnavailableItemsDisabledInMagento();
-
-$test->deleteLogsOlderThanXDays($config['days_to_keep_log_files']);
 ?>
