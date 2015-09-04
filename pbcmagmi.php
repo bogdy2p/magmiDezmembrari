@@ -25,7 +25,9 @@ define("MAGMI_BASE_URL", "/var/www/html/magentostudy/magimprt/");
 define("MAGENTO_VAR_IMPORT_DIR", "/var/www/html/magentostudy/var/import/");
 define("INPUTS_FOLDER", __DIR__ . '/files_logs/inputs_from_ftp/');
 define("OUTPUTS_FOLDER", __DIR__ . '/files_logs/csv_outputs/');
-define("CURRENT_DATE", date("Y_m_d_H_i_s"));
+//define("CURRENT_DATE", date("Y_m_d_H_i_s"));
+//define("CURRENT_DATE", date("Z"));
+define("CURRENT_DATE", time());
 
 
 $testingfile1 = false;
@@ -75,11 +77,11 @@ class PbcMagmi {
   );
 
   public function __construct() {
-    
-    
-    echo ini_get('max_execution_time'); 
-    
-    
+
+
+    echo ini_get('max_execution_time');
+
+
 //    $this->inputFileName = $inputFilename;
     $this->inputFileName = $this->getCsvInputFromFtp($this->ftp_config);
     $this->csv = new parseCSV($this->inputFileName);
@@ -390,16 +392,79 @@ class PbcMagmi {
     echo "THIS SHOULD RUN A CUSTOM QUERY ON THE PRODUCTS TABLE , FOR EACH PRODUCT IT AND SET IT TO BE DISABLED (SHOULD BE FASTER)";
   }
 
+  public function calculateTimeDifference($days, $hours, $minutes, $seconds) {
+    $time_difference = 0;
+
+    if ($seconds != 0) {
+      $time_difference = $time_difference + $seconds;
+    }
+    if ($minutes != 0) {
+      $time_difference = $time_difference + $minutes * 60;
+    }
+    if ($hours != 0) {
+      $time_difference = $time_difference + $hours * 60 * 60;
+    }
+    if ($days != 0) {
+      $time_difference = $time_difference + $days * 60 * 60 * 24;
+    }
+
+    return $time_difference;
+  }
+
   public function deleteLogsOlderThanXDays($number_of_days) {
 
-    echo "MAYBE CONFIGURABLE FROM WITHING THE CONFIG ARRAY";
+    //1 get an array of all the filenames within the INPUT FROM FTP FOLDER
+    //2 get an array of all the filenames within the PARSED CSV FOLDER
+    //DECODE THE DATES FROM THE FILENAMES (TO UNIX TIMESTAMP ?)
+    //CHECK AGAINST THE CURRENT DATE , AND IF THE DIFFERENCE IS BIGGER THAN 10 DAYS [10 minutes || 30 seconds for testing] , 
+    //      REMOVE THE FILE FROM THE SERVER.
+    $current_date = time();
+    $time_difference = $this->calculateTimeDifference($number_of_days, 0, 0, 1);
 
+    $files_to_delete = array();
+    $folders_to_search = array(
+      INPUTS_FOLDER,
+      OUTPUTS_FOLDER,
+    );
+    
+    
+    
+    foreach ($folders_to_search as $folder) {
+      if ($handle = opendir($folder)) {
+        while (false !== ($entry = readdir($handle))) {
 
-    echo "TRYING TO DELETE LOGS OLDER THAN 10 DAYS";
+          if ($folder == INPUTS_FOLDER) {
+            $timestampcsv = substr($entry, 9);
+//            print_r($timestampcsv);
+//            echo "\n";
+          }
+          else {
+            $timestampcsv = substr($entry, 7);
+//            print_r($timestampcsv);
+//            echo "\n";
+          }
 
-    echo "WILL APPEND OUTPUT MESSAGE TO A UNDELETABLE LOG FILE";
+          $actualtimestamp = substr($timestampcsv, 0, 10);
+          $integertimestamp = intval($actualtimestamp);
+
+          if ($current_date > ($integertimestamp + $time_difference)) {
+            if (strlen($entry) > 3) {
+              $files_to_delete[] = $folder . $entry;
+            }
+          }
+        }
+        closedir($handle);
+      }
+    }
+    foreach ($files_to_delete as $file) {
+      $filepath = $file;
+      $delete = unlink($filepath);
+      echo "\n - Deleted $filepath";
+    }
   }
+
 }
+
 echo "<pre>";
 /**
  * Actually Start Running The Script
@@ -423,8 +488,8 @@ $test->setUnavailableItemsAsHiddenInMagento();
 echo "\nALL DONE\n\n\n\n";
 
 echo "\n\n\nSetUnavaillableItemsDisabledInMagento Called: \n";
-$test->setUnavailableItemsDisabledInMagento();
+//$test->setUnavailableItemsDisabledInMagento();
 
-echo "\n\n\ndeleteLogsOlderThanXDays<10> Called: \n";
-$test->deleteLogsOlderThanXDays(10);
+echo "\n\n\ndeleteLogsOlderThanXDays<10> Called: \n\n";
+$test->deleteLogsOlderThanXDays(1);
 ?>
