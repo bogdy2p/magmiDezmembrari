@@ -496,8 +496,8 @@ class PbcMagmi {
 
 }
 
-runPbcMagmiScript($config);
 
+runPbcMagmiScript($config);
 /**
  * Actually Start Running The Script
  * 1) Instantiate the Class
@@ -533,9 +533,9 @@ function runPbcMagmiScript($config) {
     echo "\n\nStarting to verify each unavaillable product... \n(This might take up-to 10 minutes)...";
   }
 
-//  $test->setUnavailableItemsAsHiddenInMagento();
-//  $test->setUnavailableItemsDisabledInMagento();
-//  $test->deleteLogsOlderThanXDays($config['days_to_keep_log_files']);
+  $test->setUnavailableItemsAsHiddenInMagento();
+  $test->setUnavailableItemsDisabledInMagento();
+  $test->deleteLogsOlderThanXDays($config['days_to_keep_log_files']);
 }
 
 ?>
