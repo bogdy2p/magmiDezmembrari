@@ -13,12 +13,13 @@ if ($testing_mode) {
   error_reporting(E_ALL);
 }
 
-
 //Configuration for the script
 define("MAGENTO_BASE_URL", "/var/www/html/magentostudy/");
 define("MAGMI_BASE_URL", "/var/www/html/magentostudy/magimprt/");
 define("MAGENTO_VAR_IMPORT_DIR", "/var/www/html/magentostudy/var/import/");
-
+define("INPUTS_FOLDER", __DIR__ . '/files_logs/inputs_from_ftp/');
+define("OUTPUTS_FOLDER", __DIR__ . '/files_logs/csv_outputs/');
+define("CURRENT_DATE", date("Y_m_d_H_i_s"));
 
 
 $testingfile1 = false;
@@ -29,7 +30,7 @@ if ($testingfile1) {
 class PbcMagmi {
 
   public $ftp_config = array(
-    'local_file' => 'local.csv',
+    'local_file' => INPUTS_FOLDER . CURRENT_DATE . 'from_ftp.csv',
     'server_file' => 'input.csv',
     'ftp_server' => 'timedudeapi.cust21.reea.net',
     'ftp_username' => 'devel',
@@ -322,7 +323,7 @@ class PbcMagmi {
   }
 
   //End of saveTheOutput Function
-  
+
   function getCsvInputFromFtp($ftp_config) {
 
     $conn_id = ftp_connect($ftp_config['ftp_server']);
@@ -333,7 +334,11 @@ class PbcMagmi {
     }
     $get_csv_file = ftp_get($conn_id, $ftp_config['local_file'], $ftp_config['server_file'], FTP_BINARY);
     if ($get_csv_file) {
-      echo "Ftp file locally saved into : ".__DIR__."/".$ftp_config['local_file']." \n\n";
+      echo "\n";
+      var_dump($get_csv_file);
+      echo "\n";
+
+      echo "Ftp file locally saved into : " . $ftp_config['local_file'] . " \n\n";
       ftp_close($conn_id);
       return $ftp_config['local_file'];
     }
@@ -365,7 +370,26 @@ class PbcMagmi {
     }
   }
 
+  public function setUnavailableItemsDisabledInMagento() {
+    $items_to_be_set_with_stock0 = $this->getDifferenceBetweenCSVandMagentoDB();
+    
+    print_r($items_to_be_set_with_stock0);
+    echo "MUST BE IMPLEMENTED";
+    echo "THIS SHOULD RUN A CUSTOM QUERY ON THE PRODUCTS TABLE , FOR EACH PRODUCT IT AND SET IT TO BE DISABLED (SHOULD BE FASTER)";
+  }
+
+  public function deleteLogsOlderThanXDays($number_of_days) {
+
+    echo "MAYBE CONFIGURABLE FROM WITHING THE CONFIG ARRAY";
+
+
+    echo "TRYING TO DELETE LOGS OLDER THAN 10 DAYS";
+
+    echo "WILL APPEND OUTPUT MESSAGE TO A UNDELETABLE LOG FILE";
+  }
+
 }
+
 $test = new PbcMagmi();
 
 $test->addColumnsToTitles($test->columns_to_be_added);
@@ -378,8 +402,8 @@ if ($testing_mode) {
 
 
 $output_data = $test->expandExplanaitionField($test->csv->data);
-$test->saveTheOutput(MAGENTO_VAR_IMPORT_DIR . 'output.csv', $output_data);
-$test->modifyFileMode(MAGENTO_VAR_IMPORT_DIR . 'output.csv');
+$test->saveTheOutput(OUTPUTS_FOLDER . CURRENT_DATE . 'output.csv', $output_data);
+$test->modifyFileMode(OUTPUTS_FOLDER . CURRENT_DATE . 'output.csv');
 
 echo "\n Starting to verify each unavaillable product... \n (This might take up-to 10 minutes)...";
 $test->setUnavailableItemsAsHiddenInMagento();
