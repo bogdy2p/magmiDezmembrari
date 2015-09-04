@@ -3,7 +3,7 @@
 require_once('parsecsv.lib.php');
 
 $testing_mode = true;
-$generate_values = false;
+$generate_values = true;
 $number_to_generate = 1234;
 
 
@@ -14,9 +14,6 @@ if ($testing_mode) {
 }
 
 
-
-
-
 //Configuration for the script
 define("MAGENTO_BASE_URL", "/var/www/html/magentostudy/");
 define("MAGMI_BASE_URL", "/var/www/html/magentostudy/magimprt/");
@@ -24,50 +21,10 @@ define("MAGENTO_VAR_IMPORT_DIR", "/var/www/html/magentostudy/var/import/");
 
 
 
-$testingfile1 = true;
+$testingfile1 = false;
 if ($testingfile1) {
   require_once('testingfile1.php');
 }
-
-//
-//$temp = false;
-//if ($temp) {
-//  ini_set('display_errors', 1);
-//  error_reporting(E_ALL);
-//  require_once MAGENTO_BASE_URL . 'app/Mage.php';
-//
-//  Mage::app();
-//  $attributeSetCollection = Mage::getResourceModel('eav/entity_attribute_set_collection')->load();
-//
-//  $custom_attribute_sets = array();
-//
-//  echo"<pre>";
-//  echo"<h2>Magento current attribute sets and their id's</h2>";
-//  foreach ($attributeSetCollection as $id => $attributeSet) {
-//    $entityTypeId = $attributeSet->getEntityTypeId();
-//    $name = $attributeSet->getAttributeSetName();
-//    if ($name != "Default") {
-//      print_r("ATTRIBUTE SET :" . $name . " - " . $id);
-//      echo"<br />";
-//      $custom_attribute_sets[$id] = $name;
-//    }
-//  }
-//  print_r($custom_attribute_sets);
-//
-//
-//  foreach ($custom_attribute_sets as $key => $value) {
-//    print_r("Showing attributes in set named ");
-//    print_r($value);
-//    print_r("<br />");
-//    // $items1 = Mage::getModel('catalog/product_attribute_set_api')->items($key);
-//    $attributes_in_set = Mage::getModel('catalog/product_attribute_api')->items($key);
-//
-//    var_dump($attributes_in_set);
-//  }
-//
-//  echo"<br />";
-//  die('And now script died. RIP !');
-//}
 
 class PbcMagmi {
 
@@ -76,7 +33,7 @@ class PbcMagmi {
     'server_file' => 'input.csv',
     'ftp_server' => 'timedudeapi.cust21.reea.net',
     'ftp_username' => 'devel',
-    'ftp_user_pass' => 'RkTY9H',
+    'ftp_user_pass' => 'zwkx6Z',
     'ftp_file_path' => 'www/timedudeapi.cust21.reea.net',
   );
   public $columns_to_be_added = array(
@@ -110,8 +67,9 @@ class PbcMagmi {
     'tip_combustibil',
   );
 
-  public function __construct($inputFilename) {
-    $this->inputFileName = $inputFilename;
+  public function __construct() {
+//    $this->inputFileName = $inputFilename;
+    $this->inputFileName = $this->getCsvInputFromFtp($this->ftp_config);
     $this->csv = new parseCSV($this->inputFileName);
     $this->csv->auto($this->inputFileName);
 
@@ -371,10 +329,11 @@ class PbcMagmi {
     $login_result = ftp_login($conn_id, $ftp_config['ftp_username'], $ftp_config['ftp_user_pass']);
 
     if (ftp_chdir($conn_id, $ftp_config['ftp_file_path'])) {
-      echo "Ftp dir found. <br />";
+      echo "Ftp dir found. \n";
     }
     $get_csv_file = ftp_get($conn_id, $ftp_config['local_file'], $ftp_config['server_file'], FTP_BINARY);
     if ($get_csv_file) {
+      echo "Ftp file locally saved into : ".__DIR__."/".$ftp_config['local_file']." \n\n";
       ftp_close($conn_id);
       return $ftp_config['local_file'];
     }
@@ -407,11 +366,7 @@ class PbcMagmi {
   }
 
 }
-
-
-
-//$test = new PbcMagmi(__DIR__ . '/input.csv');
-$test = new PbcMagmi(getCsvInputFromFtp());
+$test = new PbcMagmi();
 
 $test->addColumnsToTitles($test->columns_to_be_added);
 $test->addTestDefaultColumnsToTitles($test->test_default_columns_for_magmi);
@@ -423,8 +378,8 @@ if ($testing_mode) {
 
 
 $output_data = $test->expandExplanaitionField($test->csv->data);
-$test->saveTheOutput(MAGENTO_VAR_IMPORT_DIR . 'outputfile.csv', $output_data);
-$test->modifyFileMode(MAGENTO_VAR_IMPORT_DIR . 'outputfile.csv');
+$test->saveTheOutput(MAGENTO_VAR_IMPORT_DIR . 'output.csv', $output_data);
+$test->modifyFileMode(MAGENTO_VAR_IMPORT_DIR . 'output.csv');
 
 echo "\n Starting to verify each unavaillable product... \n (This might take up-to 10 minutes)...";
 $test->setUnavailableItemsAsHiddenInMagento();
