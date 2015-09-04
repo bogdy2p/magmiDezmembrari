@@ -1,42 +1,14 @@
 <?php
 
 require_once('parsecsv.lib.php');
-
-$testing_mode = true;
-$override_php_default_limits = false;
-$generate_values = true;
-$number_to_generate = 1234;
-
-if ($override_php_default_limits) {
-  ini_set('memory_limit', '1024M');
-  ini_set('max_execution_time', 3600);
-}
-
-if ($testing_mode) {
-  ini_set('memory_limit', '1024M');
-  ini_set('max_execution_time', 3600);
-  ini_set('display_errors', 1);
-  error_reporting(E_ALL);
-}
-
-//Configuration for the script
-define("MAGENTO_BASE_URL", "/var/www/html/magentostudy/");
-define("MAGMI_BASE_URL", "/var/www/html/magentostudy/magimprt/");
-define("MAGENTO_VAR_IMPORT_DIR", "/var/www/html/magentostudy/var/import/");
-define("INPUTS_FOLDER", __DIR__ . '/files_logs/inputs_from_ftp/');
-define("OUTPUTS_FOLDER", __DIR__ . '/files_logs/csv_outputs/');
-//define("CURRENT_DATE", date("Y_m_d_H_i_s"));
-//define("CURRENT_DATE", date("Z"));
-define("CURRENT_DATE", time());
-
-
-$testingfile1 = false;
-if ($testingfile1) {
-  require_once('testingfile1.php');
-}
+require_once('configuration.php');
 
 class PbcMagmi {
 
+  /**
+   * Setup of the ftp configuration array
+   * @var type 
+   */
   public $ftp_config = array(
     'server_file' => 'input.csv', //The name of the file on the ftp server.
     'local_file' => INPUTS_FOLDER . 'FtpInput_' . CURRENT_DATE . '.csv',
@@ -45,6 +17,11 @@ class PbcMagmi {
     'ftp_user_pass' => 'zwkx6Z', //Ftp user's password
     'ftp_file_path' => 'www/timedudeapi.cust21.reea.net', //The path to the file on the ftp server
   );
+
+  /**
+   * Custom column names to be added in the output csv
+   * @var type 
+   */
   public $columns_to_be_added = array(
     'YEAR',
     'CCM',
@@ -52,6 +29,11 @@ class PbcMagmi {
     'HORSEPOWER',
     'ENGCODE'
   );
+
+  /**
+   * Column names required in the magmi output csv
+   * @var type 
+   */
   public $test_default_columns_for_magmi = array(
     'attribute_set',
     'type',
@@ -76,23 +58,25 @@ class PbcMagmi {
     'tip_combustibil',
   );
 
-  public function __construct() {
-
-
-    echo ini_get('max_execution_time');
-
-
-//    $this->inputFileName = $inputFilename;
+  /**
+   * Construct function.
+   */
+  public function __construct($config) {
+    $this->config = $config;
     $this->inputFileName = $this->getCsvInputFromFtp($this->ftp_config);
     $this->csv = new parseCSV($this->inputFileName);
     $this->csv->auto($this->inputFileName);
-
     $this->column_titles = $this->csv->titles;
     $this->csv_data = $this->csv->data;
     $this->output_data = array();
   }
 
 //End of construct Function
+  /**
+   * Adds the columns to the output file
+   * @param type $column_names_to_be_added_array
+   * @return \PbcMagmi
+   */
   function addColumnsToTitles($column_names_to_be_added_array) {
     foreach ($column_names_to_be_added_array as $column_name) {
       $this->csv->titles[] = $column_name;
@@ -101,7 +85,11 @@ class PbcMagmi {
   }
 
   //End of addColumnsToTitles Function
-
+  /**
+   * Adds the test default columns to the output file
+   * @param type $test_default_columns
+   * @return \PbcMagmi
+   */
   function addTestDefaultColumnsToTitles($test_default_columns) {
     foreach ($test_default_columns as $column_name) {
       $this->csv->titles[] = $column_name;
@@ -109,6 +97,12 @@ class PbcMagmi {
     return $this;
   }
 
+  /**
+   * Converts the EXPL field of each item into different values and outputs
+   * the new data array.
+   * @param type $data_array
+   * @return \PbcMagmi
+   */
   function expandExplanaitionField($data_array) {
     foreach ($data_array as $key => $value) {
 
@@ -204,6 +198,11 @@ class PbcMagmi {
     return $this;
   }
 
+  /**
+   * Generate pseudo-random data rows & values up to a specified number.
+   * @param type $number
+   * @return \PbcMagmi
+   */
   function addrowstodata($number) {
 
     $minimum = 700000;
@@ -248,8 +247,11 @@ class PbcMagmi {
     return $this;
   }
 
+  /**
+   * Fetch the existing product sku's array in Magento
+   * @return type
+   */
   function getExistingProductSkusInMagento() {
-    //Check if mage.app
     require_once MAGENTO_BASE_URL . 'app/Mage.php';
     Mage::app();
     $existing_product_skus_in_magento = array();
@@ -283,6 +285,11 @@ class PbcMagmi {
     return null;
   }
 
+  /**
+   * Randomizing Custom Attributes 
+   * @param type $attribute_name
+   * @return string
+   */
   function randomizeCustomAttributeValues($attribute_name) {
 
     $random_value = rand(0, 10);
@@ -304,7 +311,6 @@ class PbcMagmi {
     $all_arrays['marca_masina'] = $marci_masina;
     $all_arrays['rulaj_kilometri'] = $rulaje_kilometri;
     $all_arrays['tip_combustibil'] = $tip_combustibil;
-
     $selected = $all_arrays[$attribute_name];
     $selected_length = count($selected);
     $random_choice_number = $random_value % $selected_length;
@@ -314,7 +320,12 @@ class PbcMagmi {
   }
 
 //End of expandExplanaitionField Function
-
+  /**
+   * Saves the new converted output csv file.
+   * @param type $filename
+   * @param type $output_data
+   * @return \PbcMagmi
+   */
   function saveTheOutput($filename, $output_data) {
     if ($output_data != NULL) {
       if ($this->output_data[0] != NULL) {
@@ -331,27 +342,35 @@ class PbcMagmi {
     }
   }
 
+  /**
+   * Modifies file mode.
+   * @param type $file
+   */
   function modifyFileMode($file) {
     chmod($file, 0775);
   }
 
   //End of saveTheOutput Function
 
-  function getCsvInputFromFtp($ftp_config) {
+  /**
+   * Estabilish a ftp connection and download the input csv file required.
+   * @param type $ftp_config
+   * @return boolean
+   */
+  public function getCsvInputFromFtp($ftp_config) {
 
     $conn_id = ftp_connect($ftp_config['ftp_server']);
     $login_result = ftp_login($conn_id, $ftp_config['ftp_username'], $ftp_config['ftp_user_pass']);
-
     if (ftp_chdir($conn_id, $ftp_config['ftp_file_path'])) {
-      echo "Ftp dir found. \n";
+      if ($this->config['script_verbose']) {
+        echo "Ftp Succesfully Accessed. \n";
+      }
     }
     $get_csv_file = ftp_get($conn_id, $ftp_config['local_file'], $ftp_config['server_file'], FTP_BINARY);
     if ($get_csv_file) {
-//      echo "\n";
-//      var_dump($get_csv_file);
-//      echo "\n";
-
-      echo "Ftp file locally saved into : \n" . $ftp_config['local_file'] . " \n\n";
+      if ($this->config['script_verbose']) {
+        echo "Ftp file locally saved into : \n" . $ftp_config['local_file'] . " \n\n";
+      }
       ftp_close($conn_id);
       return $ftp_config['local_file'];
     }
@@ -359,6 +378,9 @@ class PbcMagmi {
     return false;
   }
 
+  /**
+   * For each Hydra Deleted Items , if they exist in Magento , hide them.
+   */
   function setUnavailableItemsAsHiddenInMagento() {
 
     $items_to_be_set_with_stock0 = $this->getDifferenceBetweenCSVandMagentoDB();
@@ -379,11 +401,15 @@ class PbcMagmi {
           }
         }
       }
-      echo "\n" . count($items_to_be_set_with_stock0) . " Items have been se
-/**t as not_in_stock (is_in_stock = 0) \n";
+      if ($config['script_verbose']) {
+        echo "\n" . count($items_to_be_set_with_stock0) . " Items have been set as not_in_stock (is_in_stock = 0) \n";
+      }
     }
   }
 
+  /**
+   * For each Hydra Deleted Items , if they exist in Magento , DISABLE them.
+   */
   public function setUnavailableItemsDisabledInMagento() {
     $items_to_be_set_with_stock0 = $this->getDifferenceBetweenCSVandMagentoDB();
 
@@ -392,6 +418,14 @@ class PbcMagmi {
     echo "THIS SHOULD RUN A CUSTOM QUERY ON THE PRODUCTS TABLE , FOR EACH PRODUCT IT AND SET IT TO BE DISABLED (SHOULD BE FASTER)";
   }
 
+  /**
+   * Calculates a integer time variable 
+   * @param integer $days
+   * @param integer $hours
+   * @param integer $minutes
+   * @param integer $seconds
+   * @return integer 
+   */
   public function calculateTimeDifference($days, $hours, $minutes, $seconds) {
     $time_difference = 0;
 
@@ -411,13 +445,14 @@ class PbcMagmi {
     return $time_difference;
   }
 
+  /**
+   * Function that searches the INPUTS_FOLDER and OUTPUTS Folder for files and
+   * deletes the files that have the timestamp older than the current date (by 
+   * the difference set);
+   * @param type $number_of_days
+   */
   public function deleteLogsOlderThanXDays($number_of_days) {
 
-    //1 get an array of all the filenames within the INPUT FROM FTP FOLDER
-    //2 get an array of all the filenames within the PARSED CSV FOLDER
-    //DECODE THE DATES FROM THE FILENAMES (TO UNIX TIMESTAMP ?)
-    //CHECK AGAINST THE CURRENT DATE , AND IF THE DIFFERENCE IS BIGGER THAN 10 DAYS [10 minutes || 30 seconds for testing] , 
-    //      REMOVE THE FILE FROM THE SERVER.
     $current_date = time();
     $time_difference = $this->calculateTimeDifference($number_of_days, 0, 0, 1);
 
@@ -426,27 +461,18 @@ class PbcMagmi {
       INPUTS_FOLDER,
       OUTPUTS_FOLDER,
     );
-    
-    
-    
+
     foreach ($folders_to_search as $folder) {
       if ($handle = opendir($folder)) {
         while (false !== ($entry = readdir($handle))) {
-
           if ($folder == INPUTS_FOLDER) {
             $timestampcsv = substr($entry, 9);
-//            print_r($timestampcsv);
-//            echo "\n";
           }
           else {
             $timestampcsv = substr($entry, 7);
-//            print_r($timestampcsv);
-//            echo "\n";
           }
-
           $actualtimestamp = substr($timestampcsv, 0, 10);
           $integertimestamp = intval($actualtimestamp);
-
           if ($current_date > ($integertimestamp + $time_difference)) {
             if (strlen($entry) > 3) {
               $files_to_delete[] = $folder . $entry;
@@ -459,22 +485,23 @@ class PbcMagmi {
     foreach ($files_to_delete as $file) {
       $filepath = $file;
       $delete = unlink($filepath);
-      echo "\n - Deleted $filepath";
+      if ($this->config['script_verbose']) {
+        echo "\n - Deleted $filepath";
+      }
     }
   }
 
 }
 
-echo "<pre>";
 /**
  * Actually Start Running The Script
  */
-$test = new PbcMagmi();
+$test = new PbcMagmi($config);
 $test->addColumnsToTitles($test->columns_to_be_added);
 $test->addTestDefaultColumnsToTitles($test->test_default_columns_for_magmi);
-if ($testing_mode) {
-  if ($generate_values) {
-    $test->addrowstodata($number_to_generate);
+if ($config['testing_mode']) {
+  if ($config['generate_random_values']) {
+    $test->addrowstodata($config['number_to_generate']);
   }
 }
 
@@ -482,14 +509,12 @@ if ($testing_mode) {
 $output_data = $test->expandExplanaitionField($test->csv->data);
 $test->saveTheOutput(OUTPUTS_FOLDER . 'Output_' . CURRENT_DATE . '.csv', $output_data);
 $test->modifyFileMode(OUTPUTS_FOLDER . 'Output_' . CURRENT_DATE . '.csv');
-echo "\n\nStarting to verify each unavaillable product... \n(This might take up-to 10 minutes)...";
+if ($config['script_verbose']) {
+  echo "\n\nStarting to verify each unavaillable product... \n(This might take up-to 10 minutes)...";
+}
 $test->setUnavailableItemsAsHiddenInMagento();
 
-echo "\nALL DONE\n\n\n\n";
+$test->setUnavailableItemsDisabledInMagento();
 
-echo "\n\n\nSetUnavaillableItemsDisabledInMagento Called: \n";
-//$test->setUnavailableItemsDisabledInMagento();
-
-echo "\n\n\ndeleteLogsOlderThanXDays<10> Called: \n\n";
-$test->deleteLogsOlderThanXDays(1);
+$test->deleteLogsOlderThanXDays($config['days_to_keep_log_files']);
 ?>
