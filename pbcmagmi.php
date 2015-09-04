@@ -3,12 +3,18 @@
 require_once('parsecsv.lib.php');
 
 $testing_mode = true;
+$override_php_default_limits = false;
 $generate_values = true;
 $number_to_generate = 1234;
 
+if ($override_php_default_limits) {
+  ini_set('memory_limit', '1024M');
+  ini_set('max_execution_time', 3600);
+}
 
 if ($testing_mode) {
   ini_set('memory_limit', '1024M');
+  ini_set('max_execution_time', 3600);
   ini_set('display_errors', 1);
   error_reporting(E_ALL);
 }
@@ -30,12 +36,12 @@ if ($testingfile1) {
 class PbcMagmi {
 
   public $ftp_config = array(
-    'local_file' => INPUTS_FOLDER . CURRENT_DATE . 'from_ftp.csv',
-    'server_file' => 'input.csv',
-    'ftp_server' => 'timedudeapi.cust21.reea.net',
-    'ftp_username' => 'devel',
-    'ftp_user_pass' => 'zwkx6Z',
-    'ftp_file_path' => 'www/timedudeapi.cust21.reea.net',
+    'server_file' => 'input.csv', //The name of the file on the ftp server.
+    'local_file' => INPUTS_FOLDER . 'FtpInput_' . CURRENT_DATE . '.csv',
+    'ftp_server' => 'timedudeapi.cust21.reea.net', //The adress of the ftp server
+    'ftp_username' => 'devel', // Ftp user's username
+    'ftp_user_pass' => 'zwkx6Z', //Ftp user's password
+    'ftp_file_path' => 'www/timedudeapi.cust21.reea.net', //The path to the file on the ftp server
   );
   public $columns_to_be_added = array(
     'YEAR',
@@ -69,6 +75,11 @@ class PbcMagmi {
   );
 
   public function __construct() {
+    
+    
+    echo ini_get('max_execution_time'); 
+    
+    
 //    $this->inputFileName = $inputFilename;
     $this->inputFileName = $this->getCsvInputFromFtp($this->ftp_config);
     $this->csv = new parseCSV($this->inputFileName);
@@ -334,11 +345,11 @@ class PbcMagmi {
     }
     $get_csv_file = ftp_get($conn_id, $ftp_config['local_file'], $ftp_config['server_file'], FTP_BINARY);
     if ($get_csv_file) {
-      echo "\n";
-      var_dump($get_csv_file);
-      echo "\n";
+//      echo "\n";
+//      var_dump($get_csv_file);
+//      echo "\n";
 
-      echo "Ftp file locally saved into : " . $ftp_config['local_file'] . " \n\n";
+      echo "Ftp file locally saved into : \n" . $ftp_config['local_file'] . " \n\n";
       ftp_close($conn_id);
       return $ftp_config['local_file'];
     }
@@ -366,13 +377,14 @@ class PbcMagmi {
           }
         }
       }
-      echo "\n" . count($items_to_be_set_with_stock0) . " Items have been set as not_in_stock (is_in_stock = 0) \n";
+      echo "\n" . count($items_to_be_set_with_stock0) . " Items have been se
+/**t as not_in_stock (is_in_stock = 0) \n";
     }
   }
 
   public function setUnavailableItemsDisabledInMagento() {
     $items_to_be_set_with_stock0 = $this->getDifferenceBetweenCSVandMagentoDB();
-    
+
     print_r($items_to_be_set_with_stock0);
     echo "MUST BE IMPLEMENTED";
     echo "THIS SHOULD RUN A CUSTOM QUERY ON THE PRODUCTS TABLE , FOR EACH PRODUCT IT AND SET IT TO BE DISABLED (SHOULD BE FASTER)";
@@ -387,11 +399,12 @@ class PbcMagmi {
 
     echo "WILL APPEND OUTPUT MESSAGE TO A UNDELETABLE LOG FILE";
   }
-
 }
-
+echo "<pre>";
+/**
+ * Actually Start Running The Script
+ */
 $test = new PbcMagmi();
-
 $test->addColumnsToTitles($test->columns_to_be_added);
 $test->addTestDefaultColumnsToTitles($test->test_default_columns_for_magmi);
 if ($testing_mode) {
@@ -402,9 +415,16 @@ if ($testing_mode) {
 
 
 $output_data = $test->expandExplanaitionField($test->csv->data);
-$test->saveTheOutput(OUTPUTS_FOLDER . CURRENT_DATE . 'output.csv', $output_data);
-$test->modifyFileMode(OUTPUTS_FOLDER . CURRENT_DATE . 'output.csv');
-
-echo "\n Starting to verify each unavaillable product... \n (This might take up-to 10 minutes)...";
+$test->saveTheOutput(OUTPUTS_FOLDER . 'Output_' . CURRENT_DATE . '.csv', $output_data);
+$test->modifyFileMode(OUTPUTS_FOLDER . 'Output_' . CURRENT_DATE . '.csv');
+echo "\n\nStarting to verify each unavaillable product... \n(This might take up-to 10 minutes)...";
 $test->setUnavailableItemsAsHiddenInMagento();
+
+echo "\nALL DONE\n\n\n\n";
+
+echo "\n\n\nSetUnavaillableItemsDisabledInMagento Called: \n";
+$test->setUnavailableItemsDisabledInMagento();
+
+echo "\n\n\ndeleteLogsOlderThanXDays<10> Called: \n";
+$test->deleteLogsOlderThanXDays(10);
 ?>
