@@ -606,6 +606,11 @@ class PbcMagmi {
     return $array_nume_categorii;
   }
 
+  /**
+   * 
+   * @param type $data
+   * @return \PbcMagmi
+   */
   public function fill_categories_array($data) {
 
     $categories_array = array();
@@ -614,35 +619,33 @@ class PbcMagmi {
         $integer_id = intval($category_row['ID']);
         $integer_id = $category_row['ID'];
         $categories_array[$integer_id] = $category_row['DENUMIRE'];
-//        $denumire = $category_row['DENUMIRE'];
-//        $categories_array[$denumire] = $integer_id;
       }
     }
     $this->categories = $categories_array;
     return $this;
   }
 
+  /**
+   * 
+   * @param type $data
+   * @return \PbcMagmi
+   */
   public function fill_subcategories_array($data) {
 
     $categories_array = $this->categories;
     $categories_array_inverted = array_flip($categories_array);
-    
     $subcategories_array = array();
+    $count = 0;
     foreach ($data->data as $subcategory_row) {
-
       if (isset($subcategory_row['ID_COM_CAT_DEZ_GRP'])) {
         if (in_array($subcategory_row['ID_COM_CAT_DEZ_GRP'], $categories_array_inverted)) {
-          
-              $subcat_integer_id = $subcategory_row['ID'];
-              $subcategories_array[$subcat_integer_id] = $categories_array[$subcategory_row['ID_COM_CAT_DEZ_GRP']];
+          $subcat_integer_id = $subcategory_row['ID'];
+//              $subcategories_array[$subcat_integer_id] = $categories_array[$subcategory_row['ID_COM_CAT_DEZ_GRP']];
+          $subcategories_array[$count] = $subcategory_row;
+          $subcategories_array[$count]['CATEGORY_BELONGING'] = $categories_array[$subcategory_row['ID_COM_CAT_DEZ_GRP']];
+          $count++;
         }
       }
-//          die();
-//      if ($subcategory_row['ID_COM_CAT_DEZ_GRP'] != NULL) {
-//        $integer_id = intval($subcategory_row['ID']);
-//        $integer_id_com_cat_dez_grp = intval($subcategory_row['ID_COM_CAT_DEZ_GRP']);
-//        ID_COM_CAT_DEZ_GRP
-//        $subcategories_array[$subcategory_row['DENUMIRE']] = $integer_id_com_cat_dez_grp;
     }
     $this->subcategories = $subcategories_array;
     return $this;
@@ -708,9 +711,8 @@ function testingOnlyMomentarely($config) {
 
   $test2->fill_categories_array($test2->categories_csv);
   $test2->fill_subcategories_array($test2->subcategories_csv);
-
-
-  print_r($test2->categories);
+//
+//  print_r($test2->categories);
   print_r($test2->subcategories);
 }
 
