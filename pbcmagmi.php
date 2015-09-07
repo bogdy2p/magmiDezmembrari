@@ -416,9 +416,24 @@ class PbcMagmi {
   public function setUnavailableItemsDisabledInMagento() {
     $items_to_be_set_with_stock0 = $this->getDifferenceBetweenCSVandMagentoDB();
 
-    print_r($items_to_be_set_with_stock0);
+    
+    foreach($items_to_be_set_with_stock0 as $key => $value){
+      print_r($key." ");
+    }
+    
+//    print_r($items_to_be_set_with_stock0);
     echo "MUST BE IMPLEMENTED";
     echo "THIS SHOULD RUN A CUSTOM QUERY ON THE PRODUCTS TABLE , FOR EACH PRODUCT IT AND SET IT TO BE DISABLED (SHOULD BE FASTER)";
+    
+    
+    /*
+    # First find the ID of the product status attribute in the EAV table:
+SELECT * FROM eav_attribute where entity_type_id = 4 AND attribute_code = 'status'
+
+# Then use that status attribute ID ($id) while querying the product entity table:
+UPDATE catalog_product_entity_int SET value = 1 WHERE attribute_id = $id
+    
+    */
   }
 
   /**
@@ -533,9 +548,9 @@ function runPbcMagmiScript($config) {
     echo "\n\nStarting to verify each unavaillable product... \n(This might take up-to 10 minutes)...";
   }
 
-  $test->setUnavailableItemsAsHiddenInMagento();
+//  $test->setUnavailableItemsAsHiddenInMagento();
   $test->setUnavailableItemsDisabledInMagento();
-  $test->deleteLogsOlderThanXDays($config['days_to_keep_log_files']);
+//  $test->deleteLogsOlderThanXDays($config['days_to_keep_log_files']);
 }
 
 ?>
