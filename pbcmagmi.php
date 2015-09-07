@@ -5,6 +5,11 @@ require_once('configuration.php');
 
 class PbcMagmi {
 
+  public $categories = array();
+  public $subcategories = array();
+  public $array_masini = array();
+  public $array_piese = array();
+
   /**
    * Setup of the ftp configuration array
    * @var type 
@@ -12,10 +17,14 @@ class PbcMagmi {
   public $ftp_config = array(
     'server_file' => 'input.csv', //The name of the file on the ftp server.
     'local_file' => INPUTS_FOLDER . 'FtpInput_' . CURRENT_DATE . '.csv',
-    'ftp_server' => 'timedudeapi.cust21.reea.net', //The adress of the ftp server
-    'ftp_username' => 'devel', // Ftp user's username
-    'ftp_user_pass' => 'zwkx6Z', //Ftp user's password
-    'ftp_file_path' => 'www/timedudeapi.cust21.reea.net', //The path to the file on the ftp server
+    'ftp_server' => FTP_SERVER, //The adress of the ftp server
+    'ftp_username' => FTP_USERNAME, // Ftp user's username
+    'ftp_user_pass' => FTP_USER_PASS, //Ftp user's password
+    'ftp_file_path' => FTP_FILEPATH, //The path to the file on the ftp server
+    'server_categ' => 'categorii.csv',
+    'local_categ' => INPUTS_FOLDER . 'CategoriiInput_' . CURRENT_DATE . '.csv',
+    'server_subcateg' => 'subcategorii.csv',
+    'local_subcateg' => INPUTS_FOLDER . 'SubcategoriiInput_' . CURRENT_DATE . '.csv',
   );
 
   /**
@@ -64,8 +73,14 @@ class PbcMagmi {
   public function __construct($config) {
     $this->config = $config;
     $this->inputFileName = $this->getCsvInputFromFtp($this->ftp_config);
+    $this->categories_file = $this->getCsvCategFromFtp($this->ftp_config);
+    $this->subcategories_file = $this->getCsvSubCategFromFtp($this->ftp_config);
     $this->csv = new parseCSV($this->inputFileName);
+    $this->categories_csv = new parseCSV($this->categories_file);
+    $this->subcategories_csv = new parseCSV($this->subcategories_file);
     $this->csv->auto($this->inputFileName);
+    $this->categories_csv->auto($this->categories_file);
+    $this->subcategories_csv->auto($this->subcategories_file);
     $this->column_titles = $this->csv->titles;
     $this->csv_data = $this->csv->data;
     $this->output_data = array();
@@ -372,10 +387,52 @@ class PbcMagmi {
     $get_csv_file = ftp_get($conn_id, $ftp_config['local_file'], $ftp_config['server_file'], FTP_BINARY);
     if ($get_csv_file) {
       if ($this->config['script_verbose']) {
-        echo "Ftp file locally saved into : \n" . $ftp_config['local_file'] . " \n\n";
+        echo "Input file locally saved into : \n" . $ftp_config['local_file'] . " \n\n";
       }
       ftp_close($conn_id);
       return $ftp_config['local_file'];
+    }
+    ftp_close($conn_id);
+    return false;
+  }
+
+  public function getCsvCategFromFtp($ftp_config) {
+
+    $conn_id = ftp_connect($ftp_config['ftp_server']);
+    $login_result = ftp_login($conn_id, $ftp_config['ftp_username'], $ftp_config['ftp_user_pass']);
+    if (ftp_chdir($conn_id, $ftp_config['ftp_file_path'])) {
+      if ($this->config['script_verbose']) {
+        echo "Ftp Succesfully Accessed. \n";
+      }
+    }
+    $get_csv_categorii_file = ftp_get($conn_id, $ftp_config['local_categ'], $ftp_config['server_categ'], FTP_BINARY);
+    if ($get_csv_categorii_file) {
+      if ($this->config['script_verbose']) {
+        echo "Categories file locally saved into : \n" . $ftp_config['local_categ'] . " \n\n";
+      }
+      ftp_close($conn_id);
+      return $ftp_config['local_categ'];
+    }
+    ftp_close($conn_id);
+    return false;
+  }
+
+  public function getCsvSubCategFromFtp($ftp_config) {
+
+    $conn_id = ftp_connect($ftp_config['ftp_server']);
+    $login_result = ftp_login($conn_id, $ftp_config['ftp_username'], $ftp_config['ftp_user_pass']);
+    if (ftp_chdir($conn_id, $ftp_config['ftp_file_path'])) {
+      if ($this->config['script_verbose']) {
+        echo "Ftp Succesfully Accessed. \n";
+      }
+    }
+    $get_csv_categorii_file = ftp_get($conn_id, $ftp_config['local_subcateg'], $ftp_config['server_subcateg'], FTP_BINARY);
+    if ($get_csv_categorii_file) {
+      if ($this->config['script_verbose']) {
+        echo "Subcategories file locally saved into : \n" . $ftp_config['local_subcateg'] . " \n\n";
+      }
+      ftp_close($conn_id);
+      return $ftp_config['local_subcateg'];
     }
     ftp_close($conn_id);
     return false;
@@ -416,24 +473,24 @@ class PbcMagmi {
   public function setUnavailableItemsDisabledInMagento() {
     $items_to_be_set_with_stock0 = $this->getDifferenceBetweenCSVandMagentoDB();
 
-    
-    foreach($items_to_be_set_with_stock0 as $key => $value){
-      print_r($key." ");
-    }
-    
-//    print_r($items_to_be_set_with_stock0);
-    echo "MUST BE IMPLEMENTED";
-    echo "THIS SHOULD RUN A CUSTOM QUERY ON THE PRODUCTS TABLE , FOR EACH PRODUCT IT AND SET IT TO BE DISABLED (SHOULD BE FASTER)";
-    
-    
-    /*
-    # First find the ID of the product status attribute in the EAV table:
-SELECT * FROM eav_attribute where entity_type_id = 4 AND attribute_code = 'status'
 
-# Then use that status attribute ID ($id) while querying the product entity table:
-UPDATE catalog_product_entity_int SET value = 1 WHERE attribute_id = $id
-    
-    */
+    foreach ($items_to_be_set_with_stock0 as $key => $value) {
+      print_r($key . " ");
+    }
+
+//    print_r($items_to_be_set_with_stock0);
+    echo "MUST BE IMPLEMENTED \n\n\n\n ";
+    echo "THIS SHOULD RUN A CUSTOM QUERY ON THE PRODUCTS TABLE , FOR EACH PRODUCT IT AND SET IT TO BE DISABLED (SHOULD BE FASTER)";
+
+
+    /*
+      # First find the ID of the product status attribute in the EAV table:
+      SELECT * FROM eav_attribute where entity_type_id = 4 AND attribute_code = 'status'
+
+      # Then use that status attribute ID ($id) while querying the product entity table:
+      UPDATE catalog_product_entity_int SET value = 1 WHERE attribute_id = $id
+
+     */
   }
 
   /**
@@ -509,10 +566,93 @@ UPDATE catalog_product_entity_int SET value = 1 WHERE attribute_id = $id
     }
   }
 
+  public function split_to_car_and_parts($data) {
+
+    $contor_piese = 0;
+    $contor_masini = 0;
+    foreach ($data as $row) {
+
+      if ($row['PARENT_ID'] != "NULL") {
+        $contor_piese++;
+        $this->array_piese[] = $row;
+      }
+      else {
+        $contor_masini++;
+        $this->array_masini[] = $row;
+      }
+    }
+
+    print_r("Numarul de masini dezmembrate is : \n");
+    print_r($contor_masini);
+    print_r("\n");
+    print_r("Numarul de pisee este : \n");
+    print_r($contor_piese);
+    print_r("\n");
+
+    return $this;
+  }
+
+  public function get_unique_category_names($array_piese) {
+
+    $array_nume_categorii = array();
+    foreach ($array_piese as $piesa) {
+      if (in_array($piesa['DENUMIRE'], $array_nume_categorii)) {
+        //do nothing
+      }
+      else {
+        $array_nume_categorii[] = $piesa['DENUMIRE'];
+      }
+    }
+    return $array_nume_categorii;
+  }
+
+  public function fill_categories_array($data) {
+
+    $categories_array = array();
+    foreach ($data->data as $category_row) {
+      if ($category_row['ID'] != NULL) {
+        $integer_id = intval($category_row['ID']);
+        $integer_id = $category_row['ID'];
+        $categories_array[$integer_id] = $category_row['DENUMIRE'];
+//        $denumire = $category_row['DENUMIRE'];
+//        $categories_array[$denumire] = $integer_id;
+      }
+    }
+    $this->categories = $categories_array;
+    return $this;
+  }
+
+  public function fill_subcategories_array($data) {
+
+    $categories_array = $this->categories;
+    $categories_array_inverted = array_flip($categories_array);
+    
+    $subcategories_array = array();
+    foreach ($data->data as $subcategory_row) {
+
+      if (isset($subcategory_row['ID_COM_CAT_DEZ_GRP'])) {
+        if (in_array($subcategory_row['ID_COM_CAT_DEZ_GRP'], $categories_array_inverted)) {
+          
+              $subcat_integer_id = $subcategory_row['ID'];
+              $subcategories_array[$subcat_integer_id] = $categories_array[$subcategory_row['ID_COM_CAT_DEZ_GRP']];
+        }
+      }
+//          die();
+//      if ($subcategory_row['ID_COM_CAT_DEZ_GRP'] != NULL) {
+//        $integer_id = intval($subcategory_row['ID']);
+//        $integer_id_com_cat_dez_grp = intval($subcategory_row['ID_COM_CAT_DEZ_GRP']);
+//        ID_COM_CAT_DEZ_GRP
+//        $subcategories_array[$subcategory_row['DENUMIRE']] = $integer_id_com_cat_dez_grp;
+    }
+    $this->subcategories = $subcategories_array;
+    return $this;
+  }
+
 }
 
-
 runPbcMagmiScript($config);
+testingOnlyMomentarely($config);
+
 /**
  * Actually Start Running The Script
  * 1) Instantiate the Class
@@ -527,30 +667,51 @@ runPbcMagmiScript($config);
  */
 function runPbcMagmiScript($config) {
 
-  $test = new PbcMagmi($config);
-  $test->addColumnsToTitles($test->columns_to_be_added);
-  $test->addTestDefaultColumnsToTitles($test->test_default_columns_for_magmi);
-  if ($config['testing_mode']) {
-    if ($config['generate_random_values']) {
-      $test->addrowstodata($config['number_to_generate']);
-    }
-  }
-
-  $output_data = $test->expandExplanaitionField($test->csv->data);
-  //Save the LOG FILE
-  $test->saveTheOutput(OUTPUTS_FOLDER . 'Output_' . CURRENT_DATE . '.csv', $output_data);
-  //Update the IMPORTFILE
-  $test->saveTheOutput(MAGENTO_VAR_IMPORT_FOLDER . $config['outputfile_filename_ext'], $output_data);
-
-  //If any fail , should modify the file mode for the other output too.
-  $test->modifyFileMode(OUTPUTS_FOLDER . 'Output_' . CURRENT_DATE . '.csv');
-  if ($config['script_verbose']) {
-    echo "\n\nStarting to verify each unavaillable product... \n(This might take up-to 10 minutes)...";
-  }
-
+//  $test = new PbcMagmi($config);
+//  $test->addColumnsToTitles($test->columns_to_be_added);
+//  $test->addTestDefaultColumnsToTitles($test->test_default_columns_for_magmi);
+//  if ($config['testing_mode']) {
+//    if ($config['generate_random_values']) {
+//      $test->addrowstodata($config['number_to_generate']);
+//    }
+//  }
+//
+//  $output_data = $test->expandExplanaitionField($test->csv->data);
+//  //Save the LOG FILE
+//  $test->saveTheOutput(OUTPUTS_FOLDER . 'Output_' . CURRENT_DATE . '.csv', $output_data);
+//  //Update the IMPORTFILE
+//  $test->saveTheOutput(MAGENTO_VAR_IMPORT_FOLDER . $config['outputfile_filename_ext'], $output_data);
+//
+//  //If any fail , should modify the file mode for the other output too.
+//  $test->modifyFileMode(OUTPUTS_FOLDER . 'Output_' . CURRENT_DATE . '.csv');
+//  if ($config['script_verbose']) {
+//    echo "\n\nStarting to verify each unavaillable product... \n(This might take up-to 10 minutes)...";
+//  }
 //  $test->setUnavailableItemsAsHiddenInMagento();
-  $test->setUnavailableItemsDisabledInMagento();
+//  $test->setUnavailableItemsDisabledInMagento();
 //  $test->deleteLogsOlderThanXDays($config['days_to_keep_log_files']);
+}
+
+function testingOnlyMomentarely($config) {
+  $test2 = new PbcMagmi($config);
+
+  $test2->split_to_car_and_parts($test2->csv_data);
+
+  $test2->output_data = $test2->array_masini;
+  $test2->saveTheOutput(PIESE_MASINI_CSVS . 'masini_' . CURRENT_DATE . '.csv', $test2->array_masini);
+  $test2->output_data = $test2->array_piese;
+  $test2->saveTheOutput(PIESE_MASINI_CSVS . 'piese_' . CURRENT_DATE . '.csv', $test2->array_piese);
+
+  $vasile = $test2->get_unique_category_names($test2->array_piese);
+  echo"<pre>";
+//  print_r($vasile);
+
+  $test2->fill_categories_array($test2->categories_csv);
+  $test2->fill_subcategories_array($test2->subcategories_csv);
+
+
+  print_r($test2->categories);
+  print_r($test2->subcategories);
 }
 
 ?>

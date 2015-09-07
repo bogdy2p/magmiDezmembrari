@@ -16,16 +16,21 @@ $config = array(
   'outputfile_filename_ext' => "outputfile.csv",
 );
 
+define("FTP_SERVER","timedudeapi.cust21.reea.net");
+define("FTP_USERNAME","devel");
+define("FTP_USER_PASS","E8gV1k");
+define("FTP_FILEPATH","www/timedudeapi.cust21.reea.net");
 
 /**
  * Script required Constants
  */
-define("WEB_ROOT_DIRECTORY","/var/www/html/");
-define("MAGENTO_BASE_URL", WEB_ROOT_DIRECTORY."magentostudy/");
-define("MAGMI_BASE_URL", MAGENTO_BASE_URL."magimprt/");
-define("MAGENTO_VAR_IMPORT_FOLDER",MAGENTO_BASE_URL."var/import/");
+define("WEB_ROOT_DIRECTORY", "/var/www/html/");
+define("MAGENTO_BASE_URL", WEB_ROOT_DIRECTORY . "magentostudy/");
+define("MAGMI_BASE_URL", MAGENTO_BASE_URL . "magimprt/");
+define("MAGENTO_VAR_IMPORT_FOLDER", MAGENTO_BASE_URL . "var/import/");
 define("INPUTS_FOLDER", __DIR__ . '/logs/inputs_from_ftp/');
 define("OUTPUTS_FOLDER", __DIR__ . '/logs/csv_outputs/');
+define("PIESE_MASINI_CSVS", __DIR__ . '/logs/piese_masini/');
 define("CURRENT_DATE", time());
 
 

@@ -21,7 +21,7 @@ printf "\n"
 echo "Starting Magmi Import..."
 date_magmi_import_start=$(date +"%s")
 #This assumes we have a profile outputcsv saved in magmi , that opens the outputfile.csv!
-#php /var/www/html/magentostudy/magimprt/cli/magmi.cli.php -profile="outputcsv" -mode="create"
+php /var/www/html/magentostudy/magimprt/cli/magmi.cli.php -profile="outputcsv" -mode="create"
 date_magmi_import_end=$(date +"%s")
 
 diff_magmi_import=$(($date_magmi_import_end-$date_magmi_import_start))
