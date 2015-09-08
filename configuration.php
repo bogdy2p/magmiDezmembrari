@@ -5,7 +5,7 @@
  */
 $config = array(
   'script_verbose' => false,
-  'days_to_keep_log_files' => 1,
+  'days_to_keep_log_files' => 0,
   'testing_mode' => true,
   'override_php_default_limits' => false,
   'generate_random_values' => false,

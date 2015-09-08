@@ -479,12 +479,12 @@ class PbcMagmi {
    */
   function saveTheOutput($filename, $output_data) {
     if ($output_data != NULL) {
-      if ($this->output_data[0] != NULL) {
+      if ($output_data[0] != NULL) {
         $outputCSV = new parseCSV();
-        $newcolumns = array_keys($this->output_data[0]);
+        $newcolumns = array_keys($output_data[0]);
         $outputCSV->titles = $newcolumns;
-        $outputCSV->data = $this->output_data;
-        $outputCSV->save($filename, $this->output_data);
+        $outputCSV->data = $output_data;
+        $outputCSV->save($filename, $output_data);
         if ($this->config['script_verbose']) {
           echo "Output file succesfully saved in : ";
           printf("\n");
@@ -787,10 +787,14 @@ class PbcMagmi {
     return $this;
   }
 
-  public function assign_categories_to_products() {
+  public function assign_car_data_to_parts() {
+    
+    //THIS SHOULD DO THE COMPLETE MAPPING FROM THE CARS TO THE PARTS.
+    
+    
     $categories = $this->categories ? $this->categories : NULL;
     $subcategories = $this->subcategories ? $this->subcategories : NULL;
-    $products = $this->csv->data ? $this->csv->data : NULL;
+    $products = $this->array_piese ? $this->array_piese : NULL;
     $modified_products = array();
 
     if ($products) {
@@ -806,15 +810,15 @@ class PbcMagmi {
         }
         $modified_products[] = $product;
       }
-      $this->csv->data = $modified_products;
+      $this->array_piese = $modified_products;
     }
     return $this;
   }
 
 }
 
-runPbcMagmiScript($config);
-testingOnlyMomentarely($config);
+//runPbcMagmiScript($config);
+//testingOnlyMomentarely($config);
 
 /**
  * Actually Start Running The Script
@@ -861,17 +865,13 @@ function testingOnlyMomentarely($config) {
   //This only creates two arrays from the input. Not really used.?
   $test2->split_to_car_and_parts($test2->csv_data);
 // THIS PART HERE F**KS UP THE OUTPUT
-//  $test2->saveTheOutput(PIESE_MASINI_CSVS . 'masini_' . CURRENT_DATE . '.csv', $test2->array_masini);
-//  $test2->saveTheOutput(PIESE_MASINI_CSVS . 'piese_' . CURRENT_DATE . '.csv', $test2->array_piese);
-  echo"<pre>";
-//  
-//  
+  $test2->saveTheOutput(PIESE_MASINI_CSVS . 'masini_' . CURRENT_DATE . '.csv', $test2->array_masini);
+  $test2->saveTheOutput(PIESE_MASINI_CSVS . 'piese_' . CURRENT_DATE . '.csv', $test2->array_piese);
   //Assuming we have got the categories input csv
   $test2->fill_categories_array($test2->categories_csv);
   //Assuming we have got the subcategories input csv
   $test2->fill_subcategories_array($test2->subcategories_csv);
   //Assuming we have got the products , categories and subcategories input csv
-//  print_r($test2->categories);
   $test2->addColumnsToTitles($test2->columns_to_be_added);
   $test2->addTestDefaultColumnsToTitles($test2->test_default_columns_for_magmi);
 
@@ -880,15 +880,63 @@ function testingOnlyMomentarely($config) {
   //This will fill the $this->output_data array //
   $output_data = $test2->expandFields($test2->csv->data);
   //Save the log file
-
-//  print_r($test2->output_data);
-
-
   $test2->saveTheOutput(OUTPUTS_FOLDER . 'Output_' . CURRENT_DATE . '.csv', $output_data);
 //  //Update the IMPORTFILE
   $test2->saveTheOutput(MAGENTO_VAR_IMPORT_FOLDER . $config['outputfile_filename_ext'], $output_data);
 //  //Delete old logs
   $test2->deleteLogsOlderThanXDays($config['days_to_keep_log_files']);
+}
+
+newLogicOfTheFlow($config);
+
+/**
+ * 1  .Instantiate a new pbcmagmi class.
+ *    - $this->categories = NULL ARRAY;
+ *    - $this->subcategories = NULL ARRAY;
+ *    - $this->array_masini = NULL ARRAY;
+ *    - $this->array_piese = NULL ARRAY;
+ *    - $this->csv = parseCSV object;
+ *    - $this->output_data = NULL ARRAY;
+ * 
+ * 2. .Split the csv into two data arrays (one for cars and one for products)
+ *    - $this->array_masini = array containing all the cars information
+ *    - $this->array_produse = array containing all the products information now
+ * 
+ */
+function newLogicOfTheFlow($config) {
+ echo"<pre>";
+///////////////////////////////////////////////////////////////////////////////
+  $pbcmagmi = new PbcMagmi($config);
+// *    - $this->categories = NULL ARRAY;
+// *    - $this->subcategories = NULL ARRAY;
+// *    - $this->array_masini = NULL ARRAY;
+// *    - $this->array_piese = NULL ARRAY;
+// *    - $this->csv = parseCSV object;
+// *    - $this->output_data = NULL ARRAY;
+  $pbcmagmi->split_to_car_and_parts($pbcmagmi->csv->data);
+// *    - $this->array_masini = array containing all the cars information
+// *    - $this->array_piese = array containing all the products information now
+// * print_r($pbcmagmi->array_masini);
+// * print_r($pbcmagmi->array_piese);
+  $pbcmagmi->fill_categories_array($pbcmagmi->categories_csv);
+// *    - $this->categories = array containing all the categories information in the categories csv
+// * print_r($pbcmagmi->categories);
+  $pbcmagmi->fill_subcategories_array($pbcmagmi->subcategories_csv);
+// *    - $this->subcategories = array containing all the subcategories information in the subcategories csv
+// * print_r($pbcmagmi->subcategories);
+  $pbcmagmi->assign_car_data_to_parts();
+//  $this->array_piese = $modified_products;
+//  
+// TTTTTTTTTTTTTTEEEEEEEEEEEESTTTTTTTTTTTTTt 
+//This will fill the $this->output_data array //
+//  $output_datatest = $pbcmagmi->expandFields($pbcmagmi->csv->data);
+  //////////////////////////////////////////
+  print_r($pbcmagmi->array_piese);
+die();
+
+
+ 
+  var_dump($pbcmagmi);
 }
 
 ?>
