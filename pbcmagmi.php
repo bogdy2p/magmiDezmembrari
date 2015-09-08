@@ -405,7 +405,7 @@ class PbcMagmi {
   function randomizeCustomAttributeValues($attribute_name) {
 
     $random_value = rand(0, 10);
-   
+
     $marci_masina = array(
       'Volkswagen', 'Dacia', 'BMW', 'Honda', 'Renault', 'Trabant'
     );
@@ -524,28 +524,28 @@ class PbcMagmi {
   /**
    * For each Hydra Deleted Items , if they exist in Magento , DISABLE them.
    */
-  public function setUnavailableItemsDisabledInMagento() {
-    $items_to_be_set_with_stock0 = $this->getDifferenceBetweenCSVandMagentoDB();
-
-
-    foreach ($items_to_be_set_with_stock0 as $key => $value) {
-      print_r($key . " ");
-    }
-
-//    print_r($items_to_be_set_with_stock0);
-    echo "MUST BE IMPLEMENTED \n\n\n\n ";
-    echo "THIS SHOULD RUN A CUSTOM QUERY ON THE PRODUCTS TABLE , FOR EACH PRODUCT IT AND SET IT TO BE DISABLED (SHOULD BE FASTER)";
-
-
-    /*
-      # First find the ID of the product status attribute in the EAV table:
-      SELECT * FROM eav_attribute where entity_type_id = 4 AND attribute_code = 'status'
-
-      # Then use that status attribute ID ($id) while querying the product entity table:
-      UPDATE catalog_product_entity_int SET value = 1 WHERE attribute_id = $id
-
-     */
-  }
+//  public function setUnavailableItemsDisabledInMagento() {
+//    $items_to_be_set_with_stock0 = $this->getDifferenceBetweenCSVandMagentoDB();
+//
+//
+//    foreach ($items_to_be_set_with_stock0 as $key => $value) {
+//      print_r($key . " ");
+//    }
+//
+////    print_r($items_to_be_set_with_stock0);
+//    echo "MUST BE IMPLEMENTED \n\n\n\n ";
+//    echo "THIS SHOULD RUN A CUSTOM QUERY ON THE PRODUCTS TABLE , FOR EACH PRODUCT IT AND SET IT TO BE DISABLED (SHOULD BE FASTER)";
+//
+//
+//    /*
+//      # First find the ID of the product status attribute in the EAV table:
+//      SELECT * FROM eav_attribute where entity_type_id = 4 AND attribute_code = 'status'
+//
+//      # Then use that status attribute ID ($id) while querying the product entity table:
+//      UPDATE catalog_product_entity_int SET value = 1 WHERE attribute_id = $id
+//
+//     */
+//  }
 
   /**
    * Calculates a integer time variable 
@@ -648,144 +648,101 @@ class PbcMagmi {
     }
 
     $this->array_piese = $array_piese_modified;
-    print_r("Numarul de masini dezmembrate is : \n");
-    print_r($contor_masini);
-    print_r("\n");
-    print_r("Numarul de pisee este : \n");
-    print_r($contor_piese);
-    print_r("\n");
-
-    return $this;
-  }
-  
-  public function dont_split_to_car_and_parts_and_match($data) {
-
-    $contor_piese = 0;
-    $contor_masini = 0;
-    $array_piese_modified = array();
-    foreach ($data as $row) {
-
-      if ($row['PARENT_ID'] != "NULL") {
-        $contor_piese++;
-        $this->array_piese[] = $row;
-      }
-      else {
-        $contor_masini++;
-        $this->array_masini[] = $row;
-      }
+    if ($this->config['script_verbose']) {
+      print_r("Numarul de masini dezmembrate is : ");
+      print_r($contor_masini);
+      print_r("\n");
+      print_r("Numarul de pisee este : ");
+      print_r($contor_piese);
+      print_r("\n");
     }
-    
-    foreach ($data as $piesa) {
-      foreach ($this->array_masini as $date_masina) {
-        if ($piesa['PARENT_ID'] == $date_masina['ID']) {
-          $piesa['EXPL'] = $date_masina['EXPL'];
-          $piesa['COMENT'] = $date_masina['COMENT'];
-        }
-      }
-      $array_piese_modified[] = $piesa;
-    }
-
-    
-    
-    
-    $this->array_piese = $array_piese_modified;
-    print_r("Numarul de masini dezmembrate is : \n");
-    print_r($contor_masini);
-    print_r("\n");
-    print_r("Numarul de pisee este : \n");
-    print_r($contor_piese);
-    print_r("\n");
-
     return $this;
   }
 
-  public function get_unique_category_names($array_piese) {
-
-    $array_nume_categorii = array();
-    foreach ($array_piese as $piesa) {
-      if (in_array($piesa['DENUMIRE'], $array_nume_categorii)) {
-        //do nothing
-      }
-      else {
-        $array_nume_categorii[] = $piesa['DENUMIRE'];
-      }
-    }
-    return $array_nume_categorii;
-  }
+//  public function get_unique_category_names($array_piese) {
+//
+//    $array_nume_categorii = array();
+//    foreach ($array_piese as $piesa) {
+//      if (in_array($piesa['DENUMIRE'], $array_nume_categorii)) {
+//        //do nothing
+//      }
+//      else {
+//        $array_nume_categorii[] = $piesa['DENUMIRE'];
+//      }
+//    }
+//    return $array_nume_categorii;
+//  }
 
   /**
    * 
    * @param type $data
    * @return \PbcMagmi
    */
-  public function fill_categories_array($data) {
-
-    $categories_array = array();
-    foreach ($data->data as $category_row) {
-      if ($category_row['ID'] != NULL) {
-        $integer_id = intval($category_row['ID']);
-        $integer_id = $category_row['ID'];
-        $categories_array[$integer_id] = $category_row['DENUMIRE'];
-      }
-    }
-    $this->categories = $categories_array;
-    return $this;
-  }
-
-  /**
-   * 
-   * @param type $data
-   * @return \PbcMagmi
-   */
-  public function fill_subcategories_array($data) {
-
-    $categories_array = $this->categories;
-    $categories_array_inverted = array_flip($categories_array);
-    $subcategories_array = array();
-    $count = 0;
-    foreach ($data->data as $subcategory_row) {
-      if (isset($subcategory_row['ID_COM_CAT_DEZ_GRP'])) {
-        if (in_array($subcategory_row['ID_COM_CAT_DEZ_GRP'], $categories_array_inverted)) {
-          $subcat_integer_id = $subcategory_row['ID'];
-//              $subcategories_array[$subcat_integer_id] = $categories_array[$subcategory_row['ID_COM_CAT_DEZ_GRP']];
-          $subcategories_array[$count] = $subcategory_row;
-          $subcategories_array[$count]['CATEGORY_BELONGING'] = $categories_array[$subcategory_row['ID_COM_CAT_DEZ_GRP']];
-          $count++;
-        }
-      }
-    }
-    $this->subcategories = $subcategories_array;
-    return $this;
-  }
-
-  public function assign_car_data_to_parts() {
-
-    //THIS SHOULD DO THE COMPLETE MAPPING FROM THE CARS TO THE PARTS.
-
-
-    $categories = $this->categories ? $this->categories : NULL;
-    $subcategories = $this->subcategories ? $this->subcategories : NULL;
-    $products = $this->array_piese ? $this->array_piese : NULL;
-    $modified_products = array();
-
-    if ($products) {
-      foreach ($products as $product) {
-        foreach ($subcategories as $subcategorydata) {
-          if ($product['DENUMIRE'] == $subcategorydata['DENUMIRE']) {
-            $product['CATEGORY_BELONGING'] = $subcategorydata['CATEGORY_BELONGING'];
-          }
-        }
-        //If product does not match any subcategory , assign it to "NO CATEGORY"
-        if (!isset($product['CATEGORY_BELONGING'])) {
-          $product['CATEGORY_BELONGING'] = "NO CATEGORY";
-        }
-        $modified_products[] = $product;
-      }
-      $this->array_piese = $modified_products;
-    }
-    return $this;
-  }
-
+//  public function fill_categories_array($data) {
+//
+//    $categories_array = array();
+//    foreach ($data->data as $category_row) {
+//      if ($category_row['ID'] != NULL) {
+//        $integer_id = intval($category_row['ID']);
+//        $integer_id = $category_row['ID'];
+//        $categories_array[$integer_id] = $category_row['DENUMIRE'];
+//      }
+//    }
+//    $this->categories = $categories_array;
+//    return $this;
+//  }
+//  /**
+//   * 
+//   * @param type $data
+//   * @return \PbcMagmi
+//   */
+//  public function fill_subcategories_array($data) {
+//
+//    $categories_array = $this->categories;
+//    $categories_array_inverted = array_flip($categories_array);
+//    $subcategories_array = array();
+//    $count = 0;
+//    foreach ($data->data as $subcategory_row) {
+//      if (isset($subcategory_row['ID_COM_CAT_DEZ_GRP'])) {
+//        if (in_array($subcategory_row['ID_COM_CAT_DEZ_GRP'], $categories_array_inverted)) {
+//          $subcat_integer_id = $subcategory_row['ID'];
+////              $subcategories_array[$subcat_integer_id] = $categories_array[$subcategory_row['ID_COM_CAT_DEZ_GRP']];
+//          $subcategories_array[$count] = $subcategory_row;
+//          $subcategories_array[$count]['CATEGORY_BELONGING'] = $categories_array[$subcategory_row['ID_COM_CAT_DEZ_GRP']];
+//          $count++;
+//        }
+//      }
+//    }
+//    $this->subcategories = $subcategories_array;
+//    return $this;
+//  }
+//  public function assign_car_data_to_parts() {
+//
+//    //THIS SHOULD DO THE COMPLETE MAPPING FROM THE CARS TO THE PARTS.
+//
+//
+//    $categories = $this->categories ? $this->categories : NULL;
+//    $subcategories = $this->subcategories ? $this->subcategories : NULL;
+//    $products = $this->array_piese ? $this->array_piese : NULL;
+//    $modified_products = array();
+//
+//    if ($products) {
+//      foreach ($products as $product) {
+//        foreach ($subcategories as $subcategorydata) {
+//          if ($product['DENUMIRE'] == $subcategorydata['DENUMIRE']) {
+//            $product['CATEGORY_BELONGING'] = $subcategorydata['CATEGORY_BELONGING'];
+//          }
+//        }
+//        //If product does not match any subcategory , assign it to "NO CATEGORY"
+//        if (!isset($product['CATEGORY_BELONGING'])) {
+//          $product['CATEGORY_BELONGING'] = "NO CATEGORY";
+//        }
+//        $modified_products[] = $product;
+//      }
+//      $this->array_piese = $modified_products;
+//    }
+//    return $this;
+//  }
 }
 
 //runPbcMagmiScript($config);
@@ -884,8 +841,8 @@ function newLogicOfTheFlow($config) {
 // *    - $this->array_piese = NULL ARRAY;
 // *    - $this->csv = parseCSV object;
 // *    - $this->output_data = NULL ARRAY;
-//  $pbcmagmi->split_to_car_and_parts_and_match($pbcmagmi->csv->data);
-  $pbcmagmi->dont_split_to_car_and_parts_and_match($pbcmagmi->csv->data);
+  $pbcmagmi->split_to_car_and_parts_and_match($pbcmagmi->csv->data);
+//  $pbcmagmi->dont_split_to_car_and_parts_and_match($pbcmagmi->csv->data);
 // *    - $this->array_masini = array containing all the cars information
 // *    - $this->array_piese = array containing all the products information now
 // * print_r($pbcmagmi->array_masini);
