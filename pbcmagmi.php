@@ -15,7 +15,7 @@ class PbcMagmi {
    * @var type 
    */
   public $ftp_config = array(
-    'server_file' => 'input.csv', //The name of the file on the ftp server.
+    'server_file' => 'input_modified.csv', //The name of the file on the ftp server.
     'local_file' => INPUTS_FOLDER . 'FtpInput_' . CURRENT_DATE . '.csv',
     'ftp_server' => FTP_SERVER, //The adress of the ftp server
     'ftp_username' => FTP_USERNAME, // Ftp user's username
@@ -72,15 +72,15 @@ class PbcMagmi {
    */
   public function __construct($config) {
     $this->config = $config;
-    $this->inputFileName = $this->getCsvInputFromFtp($this->ftp_config);
-    $this->categories_file = $this->getCsvCategFromFtp($this->ftp_config);
-    $this->subcategories_file = $this->getCsvSubCategFromFtp($this->ftp_config);
+    $this->getCsvInputFromFtp($this->ftp_config);
+//    $this->categories_file = $this->getCsvInputFromFtp($this->ftp_config);
+//    $this->subcategories_file = $this->getCsvInputFromFtp($this->ftp_config);
     $this->csv = new parseCSV($this->inputFileName);
-    $this->categories_csv = new parseCSV($this->categories_file);
-    $this->subcategories_csv = new parseCSV($this->subcategories_file);
+//    $this->categories_csv = new parseCSV($this->categories_file);
+//    $this->subcategories_csv = new parseCSV($this->subcategories_file);
     $this->csv->auto($this->inputFileName);
-    $this->categories_csv->auto($this->categories_file);
-    $this->subcategories_csv->auto($this->subcategories_file);
+//    $this->categories_csv->auto($this->categories_file);
+//    $this->subcategories_csv->auto($this->subcategories_file);
     $this->column_titles = $this->csv->titles;
     $this->csv_data = $this->csv->data;
     $this->output_data = array();
@@ -228,8 +228,6 @@ class PbcMagmi {
         $output_csv_data['att_amz_title'] = '';
         $output_csv_data['decor_type'] = $this->randomizeCustomAttributeValues('decor_type');
         $output_csv_data['marca_masina'] = $this->randomizeCustomAttributeValues('marca_masina');
-        $output_csv_data['rulaj_kilometri'] = $this->randomizeCustomAttributeValues('rulaj_kilometri');
-        $output_csv_data['tip_combustibil'] = $this->randomizeCustomAttributeValues('tip_combustibil');
         $output_csv_data['categories'] = $value['CATEGORY_BELONGING'];
         $output_csv_data['make'] = $make;
         $output_csv_data['model'] = $model;
@@ -248,153 +246,116 @@ class PbcMagmi {
    * @param type $data_array
    * @return \PbcMagmi
    */
-//  function expandComentFieldByComma($data_array) {
-//
-//    foreach ($data_array as $key => $value) {
-//
-//
-//
-//
-//      $make = "NULL";
-//      $model = "NULL";
-//      $engine = "NULL";
-//      $color = "NULL";
-//
-//      if (isset($value['COMENT']) && ($value['COMENT'] != "NULL")) {
-////        print_r($value['COMENT']);
-////        print_r("<br />");
-//
-//
-//        $parts = explode(',', $value['COMENT']);
-//
-//
-//        if (isset($parts[0])) {
-//          $make = $parts[0];
-//        }
-//        if (isset($parts[1])) {
-//          $model = $parts[1];
-//        }
-//        if (isset($parts[2])) {
-//          $engine = $parts[2];
-//        }
-//        if (isset($parts[3])) {
-//          $color = $parts[3];
-//        }
-//        print_r($make);
-//      }
-//
-//      if ($value['ID'] != "") {
-//
-//
-//        $output_csv_data2['make'] = $make;
-//        $output_csv_data2['model'] = $model;
-//        $output_csv_data2['engine'] = $engine;
-//        $output_csv_data2['carcolor'] = $color;
-//
-//
-//        $this->output_data[] = $output_csv_data2;
-////        $value['YEAR'] = $year;
-////        $value['CAPACITY'] = $capacity;
-////        $value['POWER'] = $power;
-////        $value['HORSEPOWER'] = $horsepower;
-////        $value['ENGCODE'] = $enginecode;
-////        $output_csv_data['sku'] = $value['ID'];
-////        $output_csv_data['name'] = $value['DENUMIRE'];
-////        $output_csv_data['price'] = $value['PRET_LISTA'];
-////        $output_csv_data['qty'] = $value['STOC_CURENT'];
-////        $output_csv_data['year'] = $value['YEAR'];
-////        $output_csv_data['capacity'] = $value['CAPACITY'];
-////        $output_csv_data['power'] = $value['POWER'];
-////        $output_csv_data['horsepower'] = $value['HORSEPOWER'];
-////        $output_csv_data['engcode'] = $value['ENGCODE'];
-////        $output_csv_data['is_in_stock'] = $value['PRODUS_ACTIV'];
-////
-////        //THIS WILL BE THE DEFAULT VALUES HARDCODED BECAUSE THEY DONT EXIST
-////
-////        $output_csv_data['attribute_set'] = 'Bloc Motor';
-////        $output_csv_data['type'] = 'simple';
-////        $output_csv_data['store'] = 'admin';
-////        $output_csv_data['att_eby_title'] = $value['DENUMIRE'];
-////        $output_csv_data['att_eby_subtitle'] = $value['DENUMIRE'] . ' Subtitle';
-////        $output_csv_data['description'] = $value['EXPL'];
-////        $output_csv_data['manage_stock'] = 1;
-////        $output_csv_data['use_config_manage_stock'] = 1;
-////        $output_csv_data['status'] = 1;
-////        //Override Manage Stock And Config Manage Stock
-////        // If Product Is Not In Hydra Stock
-////        if (($value['STOC_CURENT'] == 0) || ($value['STOC_CURENT'] == NULL)) {
-//////          print_r($value['STOC_CURENT']);
-////          $output_csv_data['manage_stock'] = 0;
-////          $output_csv_data['use_config_manage_stock'] = 0;
-////          $output_csv_data['status'] = 3;
-////        }
-////
-////        $output_csv_data['visibility'] = 'Catalog, Search';
-////        
-////        $output_csv_data['tax_class_id'] = 'None';
-////        $output_csv_data['thumbnail'] = '';
-////        $output_csv_data['small_image'] = '';
-////        $output_csv_data['image'] = '';
-////        $output_csv_data['media_gallery'] = '';
-////        $output_csv_data['att_amz_title'] = '';
-////        $output_csv_data['decor_type'] = $this->randomizeCustomAttributeValues('decor_type');
-////        $output_csv_data['marca_masina'] = $this->randomizeCustomAttributeValues('marca_masina');
-////        $output_csv_data['rulaj_kilometri'] = $this->randomizeCustomAttributeValues('rulaj_kilometri');
-////        $output_csv_data['tip_combustibil'] = $this->randomizeCustomAttributeValues('tip_combustibil');
-//////        $output_csv_data['categories'] = 'Motor + Tansmisie/Piese Motor';
-////        $output_csv_data['categories'] = $value['CATEGORY_BELONGING'];
-////        $this->output_data[] = $output_csv_data;
-//      }
-//    }
-//    return $this;
-//  }
+  function expandFieldsNew($data_array) {
 
-  /**
-   * Generate pseudo-random data rows & values up to a specified number.
-   * @param type $number
-   * @return \PbcMagmi
-   */
-  function addrowstodata($number) {
+    //List of fields to unset from the array (Unnecessary our magento case)
+    $unnecessary_fields = array(
+      'GRAMAJ_UNITATEA_MINIMA',
+      'ID_UM_MINIMA',
+      'ORDINE_AFISARE',
+      'PRET_VANZ_MAG',
+      'COD_INTERN',
+      'XDISC_PROMO',
+      'XTVA',
+      'XADAOS',
+      'ACOPERIRE',
+      'COD_BARE',
+      'STOC_COMANDAT_CLN',
+      'STOC_COMANDAT_FUR',
+      'STOC_REZERVAT',
+      'STOC_ASIGURAT',
+      'LINK_DISK',
+      'PAGINA_CATALOG',
+      'PRET_LISTA_EURO',
+      'FIELD_1',
+      'FIELD_2',
+    );
 
-    $minimum = 700000;
-    $maximum = 700000 + $number;
 
-    for ($nextid = $minimum; $nextid < $maximum; $nextid++) {
+    foreach ($data_array as $key => $value) {
 
-      $newRow = array(
-        'ID' => $nextid,
-        'ID_UM_MINIMA' => NULL,
-        'COD_INTERN' => NULL,
-        'DENUMIRE' => 'DenumireProdus' . $nextid,
-        'PRET_LISTA' => rand(1, 1000),
-        'PRET_VANZ_MAG' => '',
-        'GRAMAJ_UNITATEA_MINIMA' => '',
-        'ORDINE_AFISARE' => '',
-        'XDISC_PROMO' => '',
-        'XTVA' => '',
-        'XADAOS' => '',
-        'PRODUS_ACTIV' => 1,
-        'ACOPERIRE' => '18',
-        'COD_BARE' => '',
-        'COMENT' => '',
-        'EXPL' => '2001,2500CC,55KW,66CP,WVWZZZ1HZ' . $nextid,
-        'PRET_LISTA_EURO' => '',
-        'PAGINA_CATALOG' => '',
-        'LINK_DISK' => '',
-        'FIELD_1' => '',
-        'FIELD_2' => '',
-        'STOC_COMANDAT_CLN' => '',
-        'STOC_COMANDAT_FUR' => '',
-        'STOC_CURENT' => rand(1, 10),
-        'STOC_REZERVAT' => '',
-        'STOC_ASIGURAT' => '',
-        'PARENT_ID' => '',
-        'SOURCE_ID' => '',
-      );
+      $year = "NULL";
+      $capacity = "NULL";
+      $power = "NULL";
+      $horsepower = "NULL";
+      $enginecode = "NULL";
+      $make = "NULL";
+      $model = "NULL";
+      $engine = "NULL";
+      $color = "NULL";
 
-      $this->csv->data[] = $newRow;
+      if (isset($value['EXPL'])) {
+        $yearmatch = preg_match("(((19|20)\d{2})|((19|20)\d{2}\.))", $value['EXPL'], $yearmatches);
+        if ($yearmatch) {
+          $year = substr($yearmatches[0], 0, 4);
+        }
+
+        $capacitymatch = preg_match("([0-9]{3,5}CC)", $value['EXPL'], $capacitymatches);
+        if ($capacitymatch) {
+
+          $capacity_string = $capacitymatches[0];
+          $capacity = substr($capacity_string, 0, -2);
+        }
+
+        $powermatch = preg_match("([0-9]{1,4}KW)", $value['EXPL'], $powermatches);
+        if ($powermatch) {
+          $power_string = $powermatches[0];
+          $power = substr($power_string, 0, -2);
+        }
+
+        $horsepowermatch = preg_match("([0-9]{1,4}CP)", $value['EXPL'], $horsepowermatches);
+        if ($horsepowermatch) {
+          $horsepower_string = $horsepowermatches[0];
+          $horsepower = substr($horsepower_string, 0, -2);
+        }
+
+        $enginecodematch = preg_match("([A-Z0-9]{12,25})", $value['EXPL'], $enginecodematches);
+        if ($enginecodematch) {
+          $enginecode = $enginecodematches[0];
+        }
+      }
+
+      if (isset($value['COMENT']) && ($value['COMENT'] != "NULL")) {
+        $parts = explode(',', $value['COMENT']);
+        if (isset($parts[0])) {
+          $make = $parts[0];
+        }
+        if (isset($parts[1])) {
+          $model = $parts[1];
+        }
+        if (isset($parts[2])) {
+          $engine = $parts[2];
+        }
+        if (isset($parts[3])) {
+          $color = $parts[3];
+        }
+      }
+      if ($value['ID'] != "") {
+        $value['YEAR'] = $year;
+        $value['CAPACITY'] = $capacity;
+        $value['POWER'] = $power;
+        $value['HORSEPOWER'] = $horsepower;
+        $value['ENGCODE'] = $enginecode;
+        $value['MARCA_MASINA'] = $make;
+        $value['TIP_COMBUSTIBIL_randomed'] = $this->randomizeCustomAttributeValues('tip_combustibil');
+//        $value['MAKE'] = $make;
+        $value['MODEL'] = $model;
+        $value['ENGINE'] = $engine;
+        $value['CARCOLOR'] = $color;
+
+
+        //Unset unnecessary fields here.
+        foreach ($unnecessary_fields as $fieldname) {
+          if (isset($value[$fieldname])) {
+            unset($value[$fieldname]);
+          }
+        }
+
+
+        $this->output_data[] = $value;
+      }
     }
-
+    $this->array_piese = $this->output_data;
     return $this;
   }
 
@@ -444,24 +405,18 @@ class PbcMagmi {
   function randomizeCustomAttributeValues($attribute_name) {
 
     $random_value = rand(0, 10);
-    $decor_types = array(
-      '1000-1400cmc', '1400-1600cmc', '1600-2000cmc', '2000-2600cmc',
-    );
+   
     $marci_masina = array(
       'Volkswagen', 'Dacia', 'BMW', 'Honda', 'Renault', 'Trabant'
     );
-    $rulaje_kilometri = array(
-      '0-20000', '>250000', '20-50000', '50-100000', '100-150000', '150-250000',
-    );
+
     $tip_combustibil = array(
       'Benzina', 'Diesel', 'GPL', 'Electric',
     );
-    $all_arrays = array('decor_type', 'marca_masina', 'rulaj_kilometri', 'tip_combustibil');
+    $all_arrays = array('tip_combustibil', 'marca_masina');
 
-    $all_arrays['decor_type'] = $decor_types;
-    $all_arrays['marca_masina'] = $marci_masina;
-    $all_arrays['rulaj_kilometri'] = $rulaje_kilometri;
     $all_arrays['tip_combustibil'] = $tip_combustibil;
+    $all_arrays['marca_masina'] = $marci_masina;
     $selected = $all_arrays[$attribute_name];
     $selected_length = count($selected);
     $random_choice_number = $random_value % $selected_length;
@@ -521,54 +476,17 @@ class PbcMagmi {
       }
     }
     $get_csv_file = ftp_get($conn_id, $ftp_config['local_file'], $ftp_config['server_file'], FTP_BINARY);
+//    $get_csv_categorii_file = ftp_get($conn_id, $ftp_config['local_categ'], $ftp_config['server_categ'], FTP_BINARY);
+//    $get_csv_subcategorii_file = ftp_get($conn_id, $ftp_config['local_subcateg'], $ftp_config['server_subcateg'], FTP_BINARY);
     if ($get_csv_file) {
       if ($this->config['script_verbose']) {
         echo "Input file locally saved into : \n" . $ftp_config['local_file'] . " \n\n";
       }
       ftp_close($conn_id);
-      return $ftp_config['local_file'];
-    }
-    ftp_close($conn_id);
-    return false;
-  }
-
-  public function getCsvCategFromFtp($ftp_config) {
-
-    $conn_id = ftp_connect($ftp_config['ftp_server']);
-    $login_result = ftp_login($conn_id, $ftp_config['ftp_username'], $ftp_config['ftp_user_pass']);
-    if (ftp_chdir($conn_id, $ftp_config['ftp_file_path'])) {
-      if ($this->config['script_verbose']) {
-        echo "Ftp Succesfully Accessed. \n";
-      }
-    }
-    $get_csv_categorii_file = ftp_get($conn_id, $ftp_config['local_categ'], $ftp_config['server_categ'], FTP_BINARY);
-    if ($get_csv_categorii_file) {
-      if ($this->config['script_verbose']) {
-        echo "Categories file locally saved into : \n" . $ftp_config['local_categ'] . " \n\n";
-      }
-      ftp_close($conn_id);
-      return $ftp_config['local_categ'];
-    }
-    ftp_close($conn_id);
-    return false;
-  }
-
-  public function getCsvSubCategFromFtp($ftp_config) {
-
-    $conn_id = ftp_connect($ftp_config['ftp_server']);
-    $login_result = ftp_login($conn_id, $ftp_config['ftp_username'], $ftp_config['ftp_user_pass']);
-    if (ftp_chdir($conn_id, $ftp_config['ftp_file_path'])) {
-      if ($this->config['script_verbose']) {
-        echo "Ftp Succesfully Accessed. \n";
-      }
-    }
-    $get_csv_categorii_file = ftp_get($conn_id, $ftp_config['local_subcateg'], $ftp_config['server_subcateg'], FTP_BINARY);
-    if ($get_csv_categorii_file) {
-      if ($this->config['script_verbose']) {
-        echo "Subcategories file locally saved into : \n" . $ftp_config['local_subcateg'] . " \n\n";
-      }
-      ftp_close($conn_id);
-      return $ftp_config['local_subcateg'];
+      $this->inputFileName = $ftp_config['local_file'];
+//      $this->categories_file = $ftp_config['local_categ'];
+//      $this->subcategories_file = $ftp_config['local_subcateg'];
+      return $this;
     }
     ftp_close($conn_id);
     return false;
@@ -702,10 +620,11 @@ class PbcMagmi {
     }
   }
 
-  public function split_to_car_and_parts($data) {
+  public function split_to_car_and_parts_and_match($data) {
 
     $contor_piese = 0;
     $contor_masini = 0;
+    $array_piese_modified = array();
     foreach ($data as $row) {
 
       if ($row['PARENT_ID'] != "NULL") {
@@ -718,6 +637,58 @@ class PbcMagmi {
       }
     }
 
+    foreach ($this->array_piese as $piesa) {
+      foreach ($this->array_masini as $date_masina) {
+        if ($piesa['PARENT_ID'] == $date_masina['ID']) {
+          $piesa['EXPL'] = $date_masina['EXPL'];
+          $piesa['COMENT'] = $date_masina['COMENT'];
+        }
+      }
+      $array_piese_modified[] = $piesa;
+    }
+
+    $this->array_piese = $array_piese_modified;
+    print_r("Numarul de masini dezmembrate is : \n");
+    print_r($contor_masini);
+    print_r("\n");
+    print_r("Numarul de pisee este : \n");
+    print_r($contor_piese);
+    print_r("\n");
+
+    return $this;
+  }
+  
+  public function dont_split_to_car_and_parts_and_match($data) {
+
+    $contor_piese = 0;
+    $contor_masini = 0;
+    $array_piese_modified = array();
+    foreach ($data as $row) {
+
+      if ($row['PARENT_ID'] != "NULL") {
+        $contor_piese++;
+        $this->array_piese[] = $row;
+      }
+      else {
+        $contor_masini++;
+        $this->array_masini[] = $row;
+      }
+    }
+    
+    foreach ($data as $piesa) {
+      foreach ($this->array_masini as $date_masina) {
+        if ($piesa['PARENT_ID'] == $date_masina['ID']) {
+          $piesa['EXPL'] = $date_masina['EXPL'];
+          $piesa['COMENT'] = $date_masina['COMENT'];
+        }
+      }
+      $array_piese_modified[] = $piesa;
+    }
+
+    
+    
+    
+    $this->array_piese = $array_piese_modified;
     print_r("Numarul de masini dezmembrate is : \n");
     print_r($contor_masini);
     print_r("\n");
@@ -788,10 +759,10 @@ class PbcMagmi {
   }
 
   public function assign_car_data_to_parts() {
-    
+
     //THIS SHOULD DO THE COMPLETE MAPPING FROM THE CARS TO THE PARTS.
-    
-    
+
+
     $categories = $this->categories ? $this->categories : NULL;
     $subcategories = $this->subcategories ? $this->subcategories : NULL;
     $products = $this->array_piese ? $this->array_piese : NULL;
@@ -904,7 +875,7 @@ newLogicOfTheFlow($config);
  * 
  */
 function newLogicOfTheFlow($config) {
- echo"<pre>";
+  echo"<pre>";
 ///////////////////////////////////////////////////////////////////////////////
   $pbcmagmi = new PbcMagmi($config);
 // *    - $this->categories = NULL ARRAY;
@@ -913,29 +884,38 @@ function newLogicOfTheFlow($config) {
 // *    - $this->array_piese = NULL ARRAY;
 // *    - $this->csv = parseCSV object;
 // *    - $this->output_data = NULL ARRAY;
-  $pbcmagmi->split_to_car_and_parts($pbcmagmi->csv->data);
+//  $pbcmagmi->split_to_car_and_parts_and_match($pbcmagmi->csv->data);
+  $pbcmagmi->dont_split_to_car_and_parts_and_match($pbcmagmi->csv->data);
 // *    - $this->array_masini = array containing all the cars information
 // *    - $this->array_piese = array containing all the products information now
 // * print_r($pbcmagmi->array_masini);
 // * print_r($pbcmagmi->array_piese);
-  $pbcmagmi->fill_categories_array($pbcmagmi->categories_csv);
+//  $pbcmagmi->fill_categories_array($pbcmagmi->categories_csv);
 // *    - $this->categories = array containing all the categories information in the categories csv
 // * print_r($pbcmagmi->categories);
-  $pbcmagmi->fill_subcategories_array($pbcmagmi->subcategories_csv);
+//  $pbcmagmi->fill_subcategories_array($pbcmagmi->subcategories_csv);
 // *    - $this->subcategories = array containing all the subcategories information in the subcategories csv
 // * print_r($pbcmagmi->subcategories);
-  $pbcmagmi->assign_car_data_to_parts();
+//  $pbcmagmi->assign_car_data_to_parts();
 //  $this->array_piese = $modified_products;
 //  
 // TTTTTTTTTTTTTTEEEEEEEEEEEESTTTTTTTTTTTTTt 
 //This will fill the $this->output_data array //
 //  $output_datatest = $pbcmagmi->expandFields($pbcmagmi->csv->data);
   //////////////////////////////////////////
-  print_r($pbcmagmi->array_piese);
-die();
+//  print_r($pbcmagmi->array_piese);
 
 
- 
+  $pbcmagmi->expandFieldsNew($pbcmagmi->array_piese);
+
+  $pbcmagmi->saveTheOutput(OUTPUTS_FOLDER . 'Output_' . CURRENT_DATE . '.csv', $pbcmagmi->array_piese);
+//  print_r($pbcmagmi->output_data);
+
+
+  die();
+
+
+
   var_dump($pbcmagmi);
 }
 
