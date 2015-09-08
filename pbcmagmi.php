@@ -377,27 +377,29 @@ class PbcMagmi {
       $integer_capacity = intval($item['CAPACITY']);
       switch ($integer_capacity) {
 
-        case $integer_capacity < 1000:
+        case $integer_capacity < 1001:
           $magento_row['decor_type'] = "-1000 cmc";
           break;
-        case $integer_capacity < 1200:
+        case $integer_capacity < 1201:
           $magento_row['decor_type'] = "1000-1200 cmc";
           break;
-        case $integer_capacity < 1400:
+        case $integer_capacity < 1401:
           $magento_row['decor_type'] = "1200-1400 cmc";
           break;
-        case $integer_capacity < 1600:
+        case $integer_capacity < 1601:
           $magento_row['decor_type'] = "1200-1600 cmc";
           break;
-        case $integer_capacity < 2000:
-          $magento_row['decor_type'] = "1600-2000 cmc";
+         case $integer_capacity < 1801:
+          $magento_row['decor_type'] = "1600-8000 cmc";
           break;
-        case $integer_capacity < 2800:
+        case $integer_capacity < 2001:
+          $magento_row['decor_type'] = "1800-2000 cmc";
+          break;
+        case $integer_capacity < 2801:
           $magento_row['decor_type'] = "2000-2800 cmc";
           break;
         default:
           $magento_row['decor_type'] = "2800+ cmc";
-
           break;
       }
 
