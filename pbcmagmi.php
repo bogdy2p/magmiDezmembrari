@@ -359,6 +359,57 @@ class PbcMagmi {
     return $this;
   }
 
+  function prepareArrayPieseForOutput() {
+//    echo "<pre>";
+    $output_array = array();
+    $magento_row = array();
+    $array_piese = $this->array_piese;
+    foreach ($array_piese as $item){
+        $magento_row['sku'] = $item['ID'];
+        $magento_row['name'] = $item['DENUMIRE'];
+        $magento_row['price'] = $item['PRET_LISTA'];
+        $magento_row['qty'] = $item['STOC_CURENT'];
+        $magento_row['year'] = $item['YEAR'];
+        $magento_row['capacity'] = $item['CAPACITY'];
+        $magento_row['power'] = $item['POWER'];
+        $magento_row['horsepower'] = $item['HORSEPOWER'];
+        $magento_row['engcode'] = $item['ENGCODE'];
+        $magento_row['is_in_stock'] = $item['PRODUS_ACTIV'];
+      
+        $magento_row['attribute_set'] = 'Bloc Motor';
+        $magento_row['type'] = 'simple';
+        $magento_row['store'] = 'admin';
+        $magento_row['att_eby_title'] = $item['DENUMIRE'];
+        $magento_row['att_eby_subtitle'] = $item['DENUMIRE'] . ' Subtitle';
+        $magento_row['description'] = $item['EXPL'];
+        $magento_row['manage_stock'] = 1;
+        $magento_row['use_config_manage_stock'] = 1;
+        $magento_row['status'] = 1;
+         if (($item['STOC_CURENT'] == 0) || ($item['STOC_CURENT'] == NULL)) {
+          $magento_row['manage_stock'] = 0;
+          $magento_row['use_config_manage_stock'] = 0;
+          $magento_row['status'] = 3;
+        }
+
+        $magento_row['visibility'] = 'Catalog, Search';
+        $magento_row['tax_class_id'] = 'None';
+        $magento_row['thumbnail'] = '';
+        $magento_row['small_image'] = '';
+        $magento_row['image'] = '';
+        $magento_row['media_gallery'] = '';
+        $magento_row['att_amz_title'] = '';
+        $magento_row['categories'] = $item['CATEGORY_BELONGING'];
+        $magento_row['make'] = $item['MARCA_MASINA'];
+        $magento_row['model'] = $item['MODEL'];
+        $magento_row['engine'] = $item['ENGINE'];
+        $magento_row['carcolor'] = $item['CARCOLOR'];
+
+        $output_array[] = $magento_row;
+    }
+    $this->array_piese = $output_array;
+    return $this;
+  }
+
   /**
    * Fetch the existing product sku's array in Magento
    * @return type
@@ -787,93 +838,62 @@ function runPbcMagmiScript($config) {
 //  $test->deleteLogsOlderThanXDays($config['days_to_keep_log_files']);
 }
 
-function testingOnlyMomentarely($config) {
-  $test2 = new PbcMagmi($config);
-
-  //This only creates two arrays from the input. Not really used.?
-  $test2->split_to_car_and_parts($test2->csv_data);
-// THIS PART HERE F**KS UP THE OUTPUT
-  $test2->saveTheOutput(PIESE_MASINI_CSVS . 'masini_' . CURRENT_DATE . '.csv', $test2->array_masini);
-  $test2->saveTheOutput(PIESE_MASINI_CSVS . 'piese_' . CURRENT_DATE . '.csv', $test2->array_piese);
-  //Assuming we have got the categories input csv
-  $test2->fill_categories_array($test2->categories_csv);
-  //Assuming we have got the subcategories input csv
-  $test2->fill_subcategories_array($test2->subcategories_csv);
-  //Assuming we have got the products , categories and subcategories input csv
-  $test2->addColumnsToTitles($test2->columns_to_be_added);
-  $test2->addTestDefaultColumnsToTitles($test2->test_default_columns_for_magmi);
-
-  //Assign each product it's respective category or "no category".
-  $test2->assign_categories_to_products();
-  //This will fill the $this->output_data array //
-  $output_data = $test2->expandFields($test2->csv->data);
-  //Save the log file
-  $test2->saveTheOutput(OUTPUTS_FOLDER . 'Output_' . CURRENT_DATE . '.csv', $output_data);
-//  //Update the IMPORTFILE
-  $test2->saveTheOutput(MAGENTO_VAR_IMPORT_FOLDER . $config['outputfile_filename_ext'], $output_data);
-//  //Delete old logs
-  $test2->deleteLogsOlderThanXDays($config['days_to_keep_log_files']);
-}
+//function testingOnlyMomentarely($config) {
+//  $test2 = new PbcMagmi($config);
+//
+//  //This only creates two arrays from the input. Not really used.?
+//  $test2->split_to_car_and_parts($test2->csv_data);
+//// THIS PART HERE F**KS UP THE OUTPUT
+//  $test2->saveTheOutput(PIESE_MASINI_CSVS . 'masini_' . CURRENT_DATE . '.csv', $test2->array_masini);
+//  $test2->saveTheOutput(PIESE_MASINI_CSVS . 'piese_' . CURRENT_DATE . '.csv', $test2->array_piese);
+//  //Assuming we have got the categories input csv
+//  $test2->fill_categories_array($test2->categories_csv);
+//  //Assuming we have got the subcategories input csv
+//  $test2->fill_subcategories_array($test2->subcategories_csv);
+//  //Assuming we have got the products , categories and subcategories input csv
+//  $test2->addColumnsToTitles($test2->columns_to_be_added);
+//  $test2->addTestDefaultColumnsToTitles($test2->test_default_columns_for_magmi);
+//
+//  //Assign each product it's respective category or "no category".
+//  $test2->assign_categories_to_products();
+//  //This will fill the $this->output_data array //
+//  $output_data = $test2->expandFields($test2->csv->data);
+//  //Save the log file
+//  $test2->saveTheOutput(OUTPUTS_FOLDER . 'Output_' . CURRENT_DATE . '.csv', $output_data);
+////  //Update the IMPORTFILE
+//  $test2->saveTheOutput(MAGENTO_VAR_IMPORT_FOLDER . $config['outputfile_filename_ext'], $output_data);
+////  //Delete old logs
+//  $test2->deleteLogsOlderThanXDays($config['days_to_keep_log_files']);
+//}
 
 newLogicOfTheFlow($config);
 
-/**
- * 1  .Instantiate a new pbcmagmi class.
- *    - $this->categories = NULL ARRAY;
- *    - $this->subcategories = NULL ARRAY;
- *    - $this->array_masini = NULL ARRAY;
- *    - $this->array_piese = NULL ARRAY;
- *    - $this->csv = parseCSV object;
- *    - $this->output_data = NULL ARRAY;
- * 
- * 2. .Split the csv into two data arrays (one for cars and one for products)
- *    - $this->array_masini = array containing all the cars information
- *    - $this->array_produse = array containing all the products information now
- * 
- */
 function newLogicOfTheFlow($config) {
-  echo"<pre>";
-///////////////////////////////////////////////////////////////////////////////
+  ///////////////////////////////////////////////////////////////////////////////
   $pbcmagmi = new PbcMagmi($config);
-// *    - $this->categories = NULL ARRAY;
-// *    - $this->subcategories = NULL ARRAY;
-// *    - $this->array_masini = NULL ARRAY;
-// *    - $this->array_piese = NULL ARRAY;
-// *    - $this->csv = parseCSV object;
-// *    - $this->output_data = NULL ARRAY;
+
+
+
   $pbcmagmi->split_to_car_and_parts_and_match($pbcmagmi->csv->data);
-//  $pbcmagmi->dont_split_to_car_and_parts_and_match($pbcmagmi->csv->data);
-// *    - $this->array_masini = array containing all the cars information
-// *    - $this->array_piese = array containing all the products information now
-// * print_r($pbcmagmi->array_masini);
-// * print_r($pbcmagmi->array_piese);
-//  $pbcmagmi->fill_categories_array($pbcmagmi->categories_csv);
-// *    - $this->categories = array containing all the categories information in the categories csv
-// * print_r($pbcmagmi->categories);
-//  $pbcmagmi->fill_subcategories_array($pbcmagmi->subcategories_csv);
-// *    - $this->subcategories = array containing all the subcategories information in the subcategories csv
-// * print_r($pbcmagmi->subcategories);
-//  $pbcmagmi->assign_car_data_to_parts();
-//  $this->array_piese = $modified_products;
-//  
-// TTTTTTTTTTTTTTEEEEEEEEEEEESTTTTTTTTTTTTTt 
-//This will fill the $this->output_data array //
-//  $output_datatest = $pbcmagmi->expandFields($pbcmagmi->csv->data);
-  //////////////////////////////////////////
-//  print_r($pbcmagmi->array_piese);
+
 
 
   $pbcmagmi->expandFieldsNew($pbcmagmi->array_piese);
 
+
+//  print_r($pbcmagmi->array_piese);
+
+  $pbcmagmi->prepareArrayPieseForOutput();
+//  die();
+
   $pbcmagmi->saveTheOutput(OUTPUTS_FOLDER . 'Output_' . CURRENT_DATE . '.csv', $pbcmagmi->array_piese);
+  $pbcmagmi->modifyFileMode(OUTPUTS_FOLDER . 'Output_' . CURRENT_DATE . '.csv');
 //  print_r($pbcmagmi->output_data);
-
-
-  die();
-
-
-
-  var_dump($pbcmagmi);
+  $pbcmagmi->saveTheOutput(MAGENTO_VAR_IMPORT_FOLDER . $config['outputfile_filename_ext'], $pbcmagmi->array_piese);
+//  //Delete old logs
+//  $pbcmagmi->deleteLogsOlderThanXDays($config['days_to_keep_log_files']);
+//  die();
+//  var_dump($pbcmagmi);
 }
 
 ?>
