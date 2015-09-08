@@ -34,7 +34,7 @@ printf "\n"
 echo "Starting to reindex all magento."
 printf "\n"
 date_reindex_start=$(date +"%s")
-#php /var/www/html/magentostudy/shell/indexer.php reindexall
+php /var/www/html/magentostudy/shell/indexer.php reindexall
 
 date_reindex_end=$(date +"%s")
 printf "\n"

@@ -118,7 +118,8 @@ class PbcMagmi {
    * @param type $data_array
    * @return \PbcMagmi
    */
-  function expandExplanaitionField($data_array) {
+  function expandFields($data_array) {
+
     foreach ($data_array as $key => $value) {
 
       $year = "NULL";
@@ -126,7 +127,10 @@ class PbcMagmi {
       $power = "NULL";
       $horsepower = "NULL";
       $enginecode = "NULL";
-
+      $make = "NULL";
+      $model = "NULL";
+      $engine = "NULL";
+      $color = "NULL";
 
       if (isset($value['EXPL'])) {
         $yearmatch = preg_match("(((19|20)\d{2})|((19|20)\d{2}\.))", $value['EXPL'], $yearmatches);
@@ -136,17 +140,21 @@ class PbcMagmi {
 
         $capacitymatch = preg_match("([0-9]{3,5}CC)", $value['EXPL'], $capacitymatches);
         if ($capacitymatch) {
-          $capacity = $capacitymatches[0];
+
+          $capacity_string = $capacitymatches[0];
+          $capacity = substr($capacity_string, 0, -2);
         }
 
         $powermatch = preg_match("([0-9]{1,4}KW)", $value['EXPL'], $powermatches);
         if ($powermatch) {
-          $power = $powermatches[0];
+          $power_string = $powermatches[0];
+          $power = substr($power_string, 0, -2);
         }
 
         $horsepowermatch = preg_match("([0-9]{1,4}CP)", $value['EXPL'], $horsepowermatches);
         if ($horsepowermatch) {
-          $horsepower = $horsepowermatches[0];
+          $horsepower_string = $horsepowermatches[0];
+          $horsepower = substr($horsepower_string, 0, -2);
         }
 
         $enginecodematch = preg_match("([A-Z0-9]{12,25})", $value['EXPL'], $enginecodematches);
@@ -154,6 +162,23 @@ class PbcMagmi {
           $enginecode = $enginecodematches[0];
         }
       }
+
+      if (isset($value['COMENT']) && ($value['COMENT'] != "NULL")) {
+        $parts = explode(',', $value['COMENT']);
+        if (isset($parts[0])) {
+          $make = $parts[0];
+        }
+        if (isset($parts[1])) {
+          $model = $parts[1];
+        }
+        if (isset($parts[2])) {
+          $engine = $parts[2];
+        }
+        if (isset($parts[3])) {
+          $color = $parts[3];
+        }
+      }
+
 
       if ($value['ID'] != "") {
 
@@ -195,7 +220,6 @@ class PbcMagmi {
         }
 
         $output_csv_data['visibility'] = 'Catalog, Search';
-        $output_csv_data['categories'] = 'Motor + Tansmisie/Piese Motor';
         $output_csv_data['tax_class_id'] = 'None';
         $output_csv_data['thumbnail'] = '';
         $output_csv_data['small_image'] = '';
@@ -206,12 +230,124 @@ class PbcMagmi {
         $output_csv_data['marca_masina'] = $this->randomizeCustomAttributeValues('marca_masina');
         $output_csv_data['rulaj_kilometri'] = $this->randomizeCustomAttributeValues('rulaj_kilometri');
         $output_csv_data['tip_combustibil'] = $this->randomizeCustomAttributeValues('tip_combustibil');
+        $output_csv_data['categories'] = $value['CATEGORY_BELONGING'];
+        $output_csv_data['make'] = $make;
+        $output_csv_data['model'] = $model;
+        $output_csv_data['engine'] = $engine;
+        $output_csv_data['carcolor'] = $color;
 
         $this->output_data[] = $output_csv_data;
       }
     }
     return $this;
   }
+
+  /**
+   * Converts the EXPL field of each item into different values and outputs
+   * the new data array.
+   * @param type $data_array
+   * @return \PbcMagmi
+   */
+//  function expandComentFieldByComma($data_array) {
+//
+//    foreach ($data_array as $key => $value) {
+//
+//
+//
+//
+//      $make = "NULL";
+//      $model = "NULL";
+//      $engine = "NULL";
+//      $color = "NULL";
+//
+//      if (isset($value['COMENT']) && ($value['COMENT'] != "NULL")) {
+////        print_r($value['COMENT']);
+////        print_r("<br />");
+//
+//
+//        $parts = explode(',', $value['COMENT']);
+//
+//
+//        if (isset($parts[0])) {
+//          $make = $parts[0];
+//        }
+//        if (isset($parts[1])) {
+//          $model = $parts[1];
+//        }
+//        if (isset($parts[2])) {
+//          $engine = $parts[2];
+//        }
+//        if (isset($parts[3])) {
+//          $color = $parts[3];
+//        }
+//        print_r($make);
+//      }
+//
+//      if ($value['ID'] != "") {
+//
+//
+//        $output_csv_data2['make'] = $make;
+//        $output_csv_data2['model'] = $model;
+//        $output_csv_data2['engine'] = $engine;
+//        $output_csv_data2['carcolor'] = $color;
+//
+//
+//        $this->output_data[] = $output_csv_data2;
+////        $value['YEAR'] = $year;
+////        $value['CAPACITY'] = $capacity;
+////        $value['POWER'] = $power;
+////        $value['HORSEPOWER'] = $horsepower;
+////        $value['ENGCODE'] = $enginecode;
+////        $output_csv_data['sku'] = $value['ID'];
+////        $output_csv_data['name'] = $value['DENUMIRE'];
+////        $output_csv_data['price'] = $value['PRET_LISTA'];
+////        $output_csv_data['qty'] = $value['STOC_CURENT'];
+////        $output_csv_data['year'] = $value['YEAR'];
+////        $output_csv_data['capacity'] = $value['CAPACITY'];
+////        $output_csv_data['power'] = $value['POWER'];
+////        $output_csv_data['horsepower'] = $value['HORSEPOWER'];
+////        $output_csv_data['engcode'] = $value['ENGCODE'];
+////        $output_csv_data['is_in_stock'] = $value['PRODUS_ACTIV'];
+////
+////        //THIS WILL BE THE DEFAULT VALUES HARDCODED BECAUSE THEY DONT EXIST
+////
+////        $output_csv_data['attribute_set'] = 'Bloc Motor';
+////        $output_csv_data['type'] = 'simple';
+////        $output_csv_data['store'] = 'admin';
+////        $output_csv_data['att_eby_title'] = $value['DENUMIRE'];
+////        $output_csv_data['att_eby_subtitle'] = $value['DENUMIRE'] . ' Subtitle';
+////        $output_csv_data['description'] = $value['EXPL'];
+////        $output_csv_data['manage_stock'] = 1;
+////        $output_csv_data['use_config_manage_stock'] = 1;
+////        $output_csv_data['status'] = 1;
+////        //Override Manage Stock And Config Manage Stock
+////        // If Product Is Not In Hydra Stock
+////        if (($value['STOC_CURENT'] == 0) || ($value['STOC_CURENT'] == NULL)) {
+//////          print_r($value['STOC_CURENT']);
+////          $output_csv_data['manage_stock'] = 0;
+////          $output_csv_data['use_config_manage_stock'] = 0;
+////          $output_csv_data['status'] = 3;
+////        }
+////
+////        $output_csv_data['visibility'] = 'Catalog, Search';
+////        
+////        $output_csv_data['tax_class_id'] = 'None';
+////        $output_csv_data['thumbnail'] = '';
+////        $output_csv_data['small_image'] = '';
+////        $output_csv_data['image'] = '';
+////        $output_csv_data['media_gallery'] = '';
+////        $output_csv_data['att_amz_title'] = '';
+////        $output_csv_data['decor_type'] = $this->randomizeCustomAttributeValues('decor_type');
+////        $output_csv_data['marca_masina'] = $this->randomizeCustomAttributeValues('marca_masina');
+////        $output_csv_data['rulaj_kilometri'] = $this->randomizeCustomAttributeValues('rulaj_kilometri');
+////        $output_csv_data['tip_combustibil'] = $this->randomizeCustomAttributeValues('tip_combustibil');
+//////        $output_csv_data['categories'] = 'Motor + Tansmisie/Piese Motor';
+////        $output_csv_data['categories'] = $value['CATEGORY_BELONGING'];
+////        $this->output_data[] = $output_csv_data;
+//      }
+//    }
+//    return $this;
+//  }
 
   /**
    * Generate pseudo-random data rows & values up to a specified number.
@@ -651,6 +787,30 @@ class PbcMagmi {
     return $this;
   }
 
+  public function assign_categories_to_products() {
+    $categories = $this->categories ? $this->categories : NULL;
+    $subcategories = $this->subcategories ? $this->subcategories : NULL;
+    $products = $this->csv->data ? $this->csv->data : NULL;
+    $modified_products = array();
+
+    if ($products) {
+      foreach ($products as $product) {
+        foreach ($subcategories as $subcategorydata) {
+          if ($product['DENUMIRE'] == $subcategorydata['DENUMIRE']) {
+            $product['CATEGORY_BELONGING'] = $subcategorydata['CATEGORY_BELONGING'];
+          }
+        }
+        //If product does not match any subcategory , assign it to "NO CATEGORY"
+        if (!isset($product['CATEGORY_BELONGING'])) {
+          $product['CATEGORY_BELONGING'] = "NO CATEGORY";
+        }
+        $modified_products[] = $product;
+      }
+      $this->csv->data = $modified_products;
+    }
+    return $this;
+  }
+
 }
 
 runPbcMagmiScript($config);
@@ -698,22 +858,37 @@ function runPbcMagmiScript($config) {
 function testingOnlyMomentarely($config) {
   $test2 = new PbcMagmi($config);
 
+  //This only creates two arrays from the input. Not really used.?
   $test2->split_to_car_and_parts($test2->csv_data);
-
-  $test2->output_data = $test2->array_masini;
-  $test2->saveTheOutput(PIESE_MASINI_CSVS . 'masini_' . CURRENT_DATE . '.csv', $test2->array_masini);
-  $test2->output_data = $test2->array_piese;
-  $test2->saveTheOutput(PIESE_MASINI_CSVS . 'piese_' . CURRENT_DATE . '.csv', $test2->array_piese);
-
-  $vasile = $test2->get_unique_category_names($test2->array_piese);
+// THIS PART HERE F**KS UP THE OUTPUT
+//  $test2->saveTheOutput(PIESE_MASINI_CSVS . 'masini_' . CURRENT_DATE . '.csv', $test2->array_masini);
+//  $test2->saveTheOutput(PIESE_MASINI_CSVS . 'piese_' . CURRENT_DATE . '.csv', $test2->array_piese);
   echo"<pre>";
-//  print_r($vasile);
-
+//  
+//  
+  //Assuming we have got the categories input csv
   $test2->fill_categories_array($test2->categories_csv);
+  //Assuming we have got the subcategories input csv
   $test2->fill_subcategories_array($test2->subcategories_csv);
-//
+  //Assuming we have got the products , categories and subcategories input csv
 //  print_r($test2->categories);
-  print_r($test2->subcategories);
+  $test2->addColumnsToTitles($test2->columns_to_be_added);
+  $test2->addTestDefaultColumnsToTitles($test2->test_default_columns_for_magmi);
+
+  //Assign each product it's respective category or "no category".
+  $test2->assign_categories_to_products();
+  //This will fill the $this->output_data array //
+  $output_data = $test2->expandFields($test2->csv->data);
+  //Save the log file
+
+//  print_r($test2->output_data);
+
+
+  $test2->saveTheOutput(OUTPUTS_FOLDER . 'Output_' . CURRENT_DATE . '.csv', $output_data);
+//  //Update the IMPORTFILE
+  $test2->saveTheOutput(MAGENTO_VAR_IMPORT_FOLDER . $config['outputfile_filename_ext'], $output_data);
+//  //Delete old logs
+  $test2->deleteLogsOlderThanXDays($config['days_to_keep_log_files']);
 }
 
 ?>
