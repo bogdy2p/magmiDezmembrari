@@ -364,47 +364,81 @@ class PbcMagmi {
     $output_array = array();
     $magento_row = array();
     $array_piese = $this->array_piese;
-    foreach ($array_piese as $item){
-        $magento_row['sku'] = $item['ID'];
-        $magento_row['name'] = $item['DENUMIRE'];
-        $magento_row['price'] = $item['PRET_LISTA'];
-        $magento_row['qty'] = $item['STOC_CURENT'];
-        $magento_row['year'] = $item['YEAR'];
-        $magento_row['capacity'] = $item['CAPACITY'];
-        $magento_row['power'] = $item['POWER'];
-        $magento_row['horsepower'] = $item['HORSEPOWER'];
-        $magento_row['engcode'] = $item['ENGCODE'];
-        $magento_row['is_in_stock'] = $item['PRODUS_ACTIV'];
-      
-        $magento_row['attribute_set'] = 'Bloc Motor';
-        $magento_row['type'] = 'simple';
-        $magento_row['store'] = 'admin';
-        $magento_row['att_eby_title'] = $item['DENUMIRE'];
-        $magento_row['att_eby_subtitle'] = $item['DENUMIRE'] . ' Subtitle';
-        $magento_row['description'] = $item['EXPL'];
-        $magento_row['manage_stock'] = 1;
-        $magento_row['use_config_manage_stock'] = 1;
-        $magento_row['status'] = 1;
-         if (($item['STOC_CURENT'] == 0) || ($item['STOC_CURENT'] == NULL)) {
-          $magento_row['manage_stock'] = 0;
-          $magento_row['use_config_manage_stock'] = 0;
-          $magento_row['status'] = 3;
-        }
+    foreach ($array_piese as $item) {
+      $magento_row['sku'] = $item['ID'];
+      $magento_row['name'] = $item['DENUMIRE'];
+      $magento_row['price'] = $item['PRET_LISTA'];
+      $magento_row['qty'] = $item['STOC_CURENT'];
+      $magento_row['year'] = $item['YEAR'];
+      //decor type is cilindree motor.
 
-        $magento_row['visibility'] = 'Catalog, Search';
-        $magento_row['tax_class_id'] = 'None';
-        $magento_row['thumbnail'] = '';
-        $magento_row['small_image'] = '';
-        $magento_row['image'] = '';
-        $magento_row['media_gallery'] = '';
-        $magento_row['att_amz_title'] = '';
-        $magento_row['categories'] = $item['CATEGORY_BELONGING'];
-        $magento_row['make'] = $item['MARCA_MASINA'];
-        $magento_row['model'] = $item['MODEL'];
-        $magento_row['engine'] = $item['ENGINE'];
-        $magento_row['carcolor'] = $item['CARCOLOR'];
 
-        $output_array[] = $magento_row;
+
+      $integer_capacity = intval($item['CAPACITY']);
+      switch ($integer_capacity) {
+
+        case $integer_capacity < 1000:
+          $magento_row['decor_type'] = "-1000 cmc";
+          break;
+        case $integer_capacity < 1200:
+          $magento_row['decor_type'] = "1000-1200 cmc";
+          break;
+        case $integer_capacity < 1400:
+          $magento_row['decor_type'] = "1200-1400 cmc";
+          break;
+        case $integer_capacity < 1600:
+          $magento_row['decor_type'] = "1200-1600 cmc";
+          break;
+        case $integer_capacity < 2000:
+          $magento_row['decor_type'] = "1600-2000 cmc";
+          break;
+        case $integer_capacity < 2800:
+          $magento_row['decor_type'] = "2000-2800 cmc";
+          break;
+        default:
+          $magento_row['decor_type'] = "2800+ cmc";
+
+          break;
+      }
+
+
+
+
+//        $magento_row['decor_type'] = $item['CAPACITY'];
+      $magento_row['power'] = $item['POWER'];
+      $magento_row['horsepower'] = $item['HORSEPOWER'];
+      $magento_row['engcode'] = $item['ENGCODE'];
+      $magento_row['is_in_stock'] = $item['PRODUS_ACTIV'];
+
+      $magento_row['attribute_set'] = 'Bloc Motor';
+      $magento_row['type'] = 'simple';
+      $magento_row['store'] = 'admin';
+      $magento_row['att_eby_title'] = $item['DENUMIRE'];
+      $magento_row['att_eby_subtitle'] = $item['DENUMIRE'] . ' Subtitle';
+      $magento_row['description'] = $item['EXPL'];
+      $magento_row['manage_stock'] = 1;
+      $magento_row['use_config_manage_stock'] = 1;
+      $magento_row['status'] = 1;
+      if (($item['STOC_CURENT'] == 0) || ($item['STOC_CURENT'] == NULL)) {
+        $magento_row['manage_stock'] = 0;
+        $magento_row['use_config_manage_stock'] = 0;
+        $magento_row['status'] = 3;
+      }
+
+      $magento_row['visibility'] = 'Catalog, Search';
+      $magento_row['tax_class_id'] = 'None';
+      $magento_row['thumbnail'] = '';
+      $magento_row['small_image'] = '';
+      $magento_row['image'] = '';
+      $magento_row['media_gallery'] = '';
+      $magento_row['att_amz_title'] = '';
+      $magento_row['categories'] = $item['CATEGORY_BELONGING'];
+      $magento_row['marca_masina'] = $item['MARCA_MASINA'];
+      $magento_row['model_auto'] = $item['MODEL'];
+      $magento_row['engine'] = $item['ENGINE'];
+      $magento_row['carcolor'] = $item['CARCOLOR'];
+
+      $output_array[] = $magento_row;
     }
     $this->array_piese = $output_array;
     return $this;
@@ -891,9 +925,7 @@ function newLogicOfTheFlow($config) {
 //  print_r($pbcmagmi->output_data);
   $pbcmagmi->saveTheOutput(MAGENTO_VAR_IMPORT_FOLDER . $config['outputfile_filename_ext'], $pbcmagmi->array_piese);
 //  //Delete old logs
-//  $pbcmagmi->deleteLogsOlderThanXDays($config['days_to_keep_log_files']);
-//  die();
-//  var_dump($pbcmagmi);
+  $pbcmagmi->deleteLogsOlderThanXDays($config['days_to_keep_log_files']);
 }
 
 ?>
