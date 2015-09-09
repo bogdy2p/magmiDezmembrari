@@ -710,21 +710,6 @@ class PbcMagmi {
 
 }
 
-//runPbcMagmiScript($config);
-//testingOnlyMomentarely($config);
-
-/**
- * Actually Start Running The Script
- * 1) Instantiate the Class
- * 2) Add the new columns for the output csv
- * 3) Modify / Expand the EXPL data into the new columns
- * 4) Save the outputfile in the logs folder
- * 5) Update/Save the outputfile into the script folder to be able to read it from bash
- * 6) Modify the file's permissions
- * 7) For all the items , chech that they're still availlable in Hydra , or else disable them in Magento too.
- * 8) Check for log files older than $config['days_to_keep_log_files'] , and if any , delete them.
- * 
- */
 function runPbcMagmiScript($config) {
 
 //  $test = new PbcMagmi($config);
@@ -752,38 +737,9 @@ function runPbcMagmiScript($config) {
 //  $test->deleteLogsOlderThanXDays($config['days_to_keep_log_files']);
 }
 
-//function testingOnlyMomentarely($config) {
-//  $test2 = new PbcMagmi($config);
-//
-//  //This only creates two arrays from the input. Not really used.?
-//  $test2->split_to_car_and_parts($test2->csv_data);
-//// THIS PART HERE F**KS UP THE OUTPUT
-//  $test2->saveTheOutput(PIESE_MASINI_CSVS . 'masini_' . CURRENT_DATE . '.csv', $test2->array_masini);
-//  $test2->saveTheOutput(PIESE_MASINI_CSVS . 'piese_' . CURRENT_DATE . '.csv', $test2->array_piese);
-//  //Assuming we have got the categories input csv
-//  $test2->fill_categories_array($test2->categories_csv);
-//  //Assuming we have got the subcategories input csv
-//  $test2->fill_subcategories_array($test2->subcategories_csv);
-//  //Assuming we have got the products , categories and subcategories input csv
-//  $test2->addColumnsToTitles($test2->columns_to_be_added);
-//  $test2->addTestDefaultColumnsToTitles($test2->test_default_columns_for_magmi);
-//
-//  //Assign each product it's respective category or "no category".
-//  $test2->assign_categories_to_products();
-//  //This will fill the $this->output_data array //
-//  $output_data = $test2->expandFields($test2->csv->data);
-//  //Save the log file
-//  $test2->saveTheOutput(OUTPUTS_FOLDER . 'Output_' . CURRENT_DATE . '.csv', $output_data);
-////  //Update the IMPORTFILE
-//  $test2->saveTheOutput(MAGENTO_VAR_IMPORT_FOLDER . $config['outputfile_filename_ext'], $output_data);
-////  //Delete old logs
-//  $test2->deleteLogsOlderThanXDays($config['days_to_keep_log_files']);
-//}
-
 newLogicOfTheFlow($config);
 
 function newLogicOfTheFlow($config) {
-  ///////////////////////////////////////////////////////////////////////////////
   $pbcmagmi = new PbcMagmi($config);
 
   $pbcmagmi->split_to_car_and_parts_and_match($pbcmagmi->csv->data);
