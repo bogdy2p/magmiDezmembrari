@@ -73,14 +73,8 @@ class PbcMagmi {
   public function __construct($config) {
     $this->config = $config;
     $this->getCsvInputFromFtp($this->ftp_config);
-//    $this->categories_file = $this->getCsvInputFromFtp($this->ftp_config);
-//    $this->subcategories_file = $this->getCsvInputFromFtp($this->ftp_config);
     $this->csv = new parseCSV($this->inputFileName);
-//    $this->categories_csv = new parseCSV($this->categories_file);
-//    $this->subcategories_csv = new parseCSV($this->subcategories_file);
     $this->csv->auto($this->inputFileName);
-//    $this->categories_csv->auto($this->categories_file);
-//    $this->subcategories_csv->auto($this->subcategories_file);
     $this->column_titles = $this->csv->titles;
     $this->csv_data = $this->csv->data;
     $this->output_data = array();
@@ -213,7 +207,6 @@ class PbcMagmi {
         //Override Manage Stock And Config Manage Stock
         // If Product Is Not In Hydra Stock
         if (($value['STOC_CURENT'] == 0) || ($value['STOC_CURENT'] == NULL)) {
-//          print_r($value['STOC_CURENT']);
           $output_csv_data['manage_stock'] = 0;
           $output_csv_data['use_config_manage_stock'] = 0;
           $output_csv_data['status'] = 3;
@@ -338,7 +331,6 @@ class PbcMagmi {
         $value['ENGCODE'] = $enginecode;
         $value['MARCA_MASINA'] = $make;
         $value['TIP_COMBUSTIBIL_randomed'] = $this->randomizeCustomAttributeValues('tip_combustibil');
-//        $value['MAKE'] = $make;
         $value['MODEL'] = $model;
         $value['ENGINE'] = $engine;
         $value['CARCOLOR'] = $color;
@@ -360,7 +352,6 @@ class PbcMagmi {
   }
 
   function prepareArrayPieseForOutput() {
-//    echo "<pre>";
     $output_array = array();
     $magento_row = array();
     $array_piese = $this->array_piese;
@@ -373,7 +364,7 @@ class PbcMagmi {
       //decor type is cilindree motor.
 
 
-
+      //Capacity Logic
       $integer_capacity = intval($item['CAPACITY']);
       switch ($integer_capacity) {
 
@@ -563,16 +554,12 @@ class PbcMagmi {
       }
     }
     $get_csv_file = ftp_get($conn_id, $ftp_config['local_file'], $ftp_config['server_file'], FTP_BINARY);
-//    $get_csv_categorii_file = ftp_get($conn_id, $ftp_config['local_categ'], $ftp_config['server_categ'], FTP_BINARY);
-//    $get_csv_subcategorii_file = ftp_get($conn_id, $ftp_config['local_subcateg'], $ftp_config['server_subcateg'], FTP_BINARY);
     if ($get_csv_file) {
       if ($this->config['script_verbose']) {
         echo "Input file locally saved into : \n" . $ftp_config['local_file'] . " \n\n";
       }
       ftp_close($conn_id);
       $this->inputFileName = $ftp_config['local_file'];
-//      $this->categories_file = $ftp_config['local_categ'];
-//      $this->subcategories_file = $ftp_config['local_subcateg'];
       return $this;
     }
     ftp_close($conn_id);
@@ -607,32 +594,6 @@ class PbcMagmi {
       }
     }
   }
-
-  /**
-   * For each Hydra Deleted Items , if they exist in Magento , DISABLE them.
-   */
-//  public function setUnavailableItemsDisabledInMagento() {
-//    $items_to_be_set_with_stock0 = $this->getDifferenceBetweenCSVandMagentoDB();
-//
-//
-//    foreach ($items_to_be_set_with_stock0 as $key => $value) {
-//      print_r($key . " ");
-//    }
-//
-////    print_r($items_to_be_set_with_stock0);
-//    echo "MUST BE IMPLEMENTED \n\n\n\n ";
-//    echo "THIS SHOULD RUN A CUSTOM QUERY ON THE PRODUCTS TABLE , FOR EACH PRODUCT IT AND SET IT TO BE DISABLED (SHOULD BE FASTER)";
-//
-//
-//    /*
-//      # First find the ID of the product status attribute in the EAV table:
-//      SELECT * FROM eav_attribute where entity_type_id = 4 AND attribute_code = 'status'
-//
-//      # Then use that status attribute ID ($id) while querying the product entity table:
-//      UPDATE catalog_product_entity_int SET value = 1 WHERE attribute_id = $id
-//
-//     */
-//  }
 
   /**
    * Calculates a integer time variable 
@@ -746,90 +707,7 @@ class PbcMagmi {
     return $this;
   }
 
-//  public function get_unique_category_names($array_piese) {
-//
-//    $array_nume_categorii = array();
-//    foreach ($array_piese as $piesa) {
-//      if (in_array($piesa['DENUMIRE'], $array_nume_categorii)) {
-//        //do nothing
-//      }
-//      else {
-//        $array_nume_categorii[] = $piesa['DENUMIRE'];
-//      }
-//    }
-//    return $array_nume_categorii;
-//  }
 
-  /**
-   * 
-   * @param type $data
-   * @return \PbcMagmi
-   */
-//  public function fill_categories_array($data) {
-//
-//    $categories_array = array();
-//    foreach ($data->data as $category_row) {
-//      if ($category_row['ID'] != NULL) {
-//        $integer_id = intval($category_row['ID']);
-//        $integer_id = $category_row['ID'];
-//        $categories_array[$integer_id] = $category_row['DENUMIRE'];
-//      }
-//    }
-//    $this->categories = $categories_array;
-//    return $this;
-//  }
-//  /**
-//   * 
-//   * @param type $data
-//   * @return \PbcMagmi
-//   */
-//  public function fill_subcategories_array($data) {
-//
-//    $categories_array = $this->categories;
-//    $categories_array_inverted = array_flip($categories_array);
-//    $subcategories_array = array();
-//    $count = 0;
-//    foreach ($data->data as $subcategory_row) {
-//      if (isset($subcategory_row['ID_COM_CAT_DEZ_GRP'])) {
-//        if (in_array($subcategory_row['ID_COM_CAT_DEZ_GRP'], $categories_array_inverted)) {
-//          $subcat_integer_id = $subcategory_row['ID'];
-////              $subcategories_array[$subcat_integer_id] = $categories_array[$subcategory_row['ID_COM_CAT_DEZ_GRP']];
-//          $subcategories_array[$count] = $subcategory_row;
-//          $subcategories_array[$count]['CATEGORY_BELONGING'] = $categories_array[$subcategory_row['ID_COM_CAT_DEZ_GRP']];
-//          $count++;
-//        }
-//      }
-//    }
-//    $this->subcategories = $subcategories_array;
-//    return $this;
-//  }
-//  public function assign_car_data_to_parts() {
-//
-//    //THIS SHOULD DO THE COMPLETE MAPPING FROM THE CARS TO THE PARTS.
-//
-//
-//    $categories = $this->categories ? $this->categories : NULL;
-//    $subcategories = $this->subcategories ? $this->subcategories : NULL;
-//    $products = $this->array_piese ? $this->array_piese : NULL;
-//    $modified_products = array();
-//
-//    if ($products) {
-//      foreach ($products as $product) {
-//        foreach ($subcategories as $subcategorydata) {
-//          if ($product['DENUMIRE'] == $subcategorydata['DENUMIRE']) {
-//            $product['CATEGORY_BELONGING'] = $subcategorydata['CATEGORY_BELONGING'];
-//          }
-//        }
-//        //If product does not match any subcategory , assign it to "NO CATEGORY"
-//        if (!isset($product['CATEGORY_BELONGING'])) {
-//          $product['CATEGORY_BELONGING'] = "NO CATEGORY";
-//        }
-//        $modified_products[] = $product;
-//      }
-//      $this->array_piese = $modified_products;
-//    }
-//    return $this;
-//  }
 }
 
 //runPbcMagmiScript($config);
@@ -908,25 +786,15 @@ function newLogicOfTheFlow($config) {
   ///////////////////////////////////////////////////////////////////////////////
   $pbcmagmi = new PbcMagmi($config);
 
-
-
   $pbcmagmi->split_to_car_and_parts_and_match($pbcmagmi->csv->data);
-
-
 
   $pbcmagmi->expandFieldsNew($pbcmagmi->array_piese);
 
-
-//  print_r($pbcmagmi->array_piese);
-
   $pbcmagmi->prepareArrayPieseForOutput();
-//  die();
 
   $pbcmagmi->saveTheOutput(OUTPUTS_FOLDER . 'Output_' . CURRENT_DATE . '.csv', $pbcmagmi->array_piese);
   $pbcmagmi->modifyFileMode(OUTPUTS_FOLDER . 'Output_' . CURRENT_DATE . '.csv');
-//  print_r($pbcmagmi->output_data);
   $pbcmagmi->saveTheOutput(MAGENTO_VAR_IMPORT_FOLDER . $config['outputfile_filename_ext'], $pbcmagmi->array_piese);
-//  //Delete old logs
   $pbcmagmi->deleteLogsOlderThanXDays($config['days_to_keep_log_files']);
 }
 
