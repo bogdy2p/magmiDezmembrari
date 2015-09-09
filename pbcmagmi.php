@@ -9,6 +9,7 @@ class PbcMagmi {
   public $subcategories = array();
   public $array_masini = array();
   public $array_piese = array();
+  public $errors = array();
 
   /**
    * Setup of the ftp configuration array
@@ -362,8 +363,6 @@ class PbcMagmi {
       $magento_row['qty'] = $item['STOC_CURENT'];
       $magento_row['year'] = $item['YEAR'];
       //decor type is cilindree motor.
-
-
       //Capacity Logic
       $integer_capacity = intval($item['CAPACITY']);
       switch ($integer_capacity) {
@@ -380,7 +379,7 @@ class PbcMagmi {
         case $integer_capacity < 1601:
           $magento_row['decor_type'] = "1200-1600 cmc";
           break;
-         case $integer_capacity < 1801:
+        case $integer_capacity < 1801:
           $magento_row['decor_type'] = "1600-8000 cmc";
           break;
         case $integer_capacity < 2001:
@@ -534,7 +533,16 @@ class PbcMagmi {
    * @param type $file
    */
   function modifyFileMode($file) {
-    chmod($file, 0775);
+    if (file_exists($file)) {
+      chmod($file, 0775);
+    }
+    else {
+      $error = array(
+        "code" => "404",
+        "message" => "Specified Output File does not exist"
+      );
+      $this->errors[] = $error;
+    }
   }
 
   //End of saveTheOutput Function
@@ -548,21 +556,29 @@ class PbcMagmi {
 
     $conn_id = ftp_connect($ftp_config['ftp_server']);
     $login_result = ftp_login($conn_id, $ftp_config['ftp_username'], $ftp_config['ftp_user_pass']);
-    if (ftp_chdir($conn_id, $ftp_config['ftp_file_path'])) {
-      if ($this->config['script_verbose']) {
-        echo "Ftp Succesfully Accessed. \n";
+    if ($login_result) {
+      if (ftp_chdir($conn_id, $ftp_config['ftp_file_path'])) {
+        if ($this->config['script_verbose']) {
+          echo "Ftp Succesfully Accessed. \n";
+        }
       }
-    }
-    $get_csv_file = ftp_get($conn_id, $ftp_config['local_file'], $ftp_config['server_file'], FTP_BINARY);
-    if ($get_csv_file) {
-      if ($this->config['script_verbose']) {
-        echo "Input file locally saved into : \n" . $ftp_config['local_file'] . " \n\n";
+      $get_csv_file = ftp_get($conn_id, $ftp_config['local_file'], $ftp_config['server_file'], FTP_BINARY);
+      if ($get_csv_file) {
+        if ($this->config['script_verbose']) {
+          echo "Input file locally saved into : \n" . $ftp_config['local_file'] . " \n\n";
+        }
+        ftp_close($conn_id);
+        $this->inputFileName = $ftp_config['local_file'];
+        return $this;
       }
-      ftp_close($conn_id);
-      $this->inputFileName = $ftp_config['local_file'];
-      return $this;
     }
     ftp_close($conn_id);
+    $errorgettingcsvinput = array(
+      'code' => "404",
+      'message' => "Died trying to get input from ftp. \n Please check username , password & connectivity",
+    );
+    $this->errors[] = $errorgettingcsvinput;
+    $this->inputFileName = NULL;
     return false;
   }
 
@@ -707,7 +723,6 @@ class PbcMagmi {
     return $this;
   }
 
-
 }
 
 function runPbcMagmiScript($config) {
@@ -752,6 +767,12 @@ function newLogicOfTheFlow($config) {
   $pbcmagmi->modifyFileMode(OUTPUTS_FOLDER . 'Output_' . CURRENT_DATE . '.csv');
   $pbcmagmi->saveTheOutput(MAGENTO_VAR_IMPORT_FOLDER . $config['outputfile_filename_ext'], $pbcmagmi->array_piese);
   $pbcmagmi->deleteLogsOlderThanXDays($config['days_to_keep_log_files']);
+
+
+
+  if (count($pbcmagmi->errors) > 0) {
+    print_r($pbcmagmi->errors);
+  }
 }
 
 ?>

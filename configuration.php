@@ -5,7 +5,7 @@
  */
 $config = array(
   'script_verbose' => false,
-  'days_to_keep_log_files' => 0,
+  'days_to_keep_log_files' => 1,
   'testing_mode' => true,
   'override_php_default_limits' => false,
   'generate_random_values' => false,
@@ -18,7 +18,7 @@ $config = array(
 
 define("FTP_SERVER","timedudeapi.cust21.reea.net");
 define("FTP_USERNAME","devel");
-define("FTP_USER_PASS","oaT2Vb");
+define("FTP_USER_PASS","n4d8nDa");
 define("FTP_FILEPATH","www/timedudeapi.cust21.reea.net");
 
 /**
