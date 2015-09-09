@@ -62,7 +62,7 @@ class PbcMagmi {
     'image',
     'media_gallery',
     'att_amz_title',
-    'decor_type',
+    'capacitate_motor',
     'marca_masina',
     'rulaj_kilometri',
     'tip_combustibil',
@@ -113,126 +113,126 @@ class PbcMagmi {
    * @param type $data_array
    * @return \PbcMagmi
    */
-  function expandFields($data_array) {
-
-    foreach ($data_array as $key => $value) {
-
-      $year = "NULL";
-      $capacity = "NULL";
-      $power = "NULL";
-      $horsepower = "NULL";
-      $enginecode = "NULL";
-      $make = "NULL";
-      $model = "NULL";
-      $engine = "NULL";
-      $color = "NULL";
-
-      if (isset($value['EXPL'])) {
-        $yearmatch = preg_match("(((19|20)\d{2})|((19|20)\d{2}\.))", $value['EXPL'], $yearmatches);
-        if ($yearmatch) {
-          $year = substr($yearmatches[0], 0, 4);
-        }
-
-        $capacitymatch = preg_match("([0-9]{3,5}CC)", $value['EXPL'], $capacitymatches);
-        if ($capacitymatch) {
-
-          $capacity_string = $capacitymatches[0];
-          $capacity = substr($capacity_string, 0, -2);
-        }
-
-        $powermatch = preg_match("([0-9]{1,4}KW)", $value['EXPL'], $powermatches);
-        if ($powermatch) {
-          $power_string = $powermatches[0];
-          $power = substr($power_string, 0, -2);
-        }
-
-        $horsepowermatch = preg_match("([0-9]{1,4}CP)", $value['EXPL'], $horsepowermatches);
-        if ($horsepowermatch) {
-          $horsepower_string = $horsepowermatches[0];
-          $horsepower = substr($horsepower_string, 0, -2);
-        }
-
-        $enginecodematch = preg_match("([A-Z0-9]{12,25})", $value['EXPL'], $enginecodematches);
-        if ($enginecodematch) {
-          $enginecode = $enginecodematches[0];
-        }
-      }
-
-      if (isset($value['COMENT']) && ($value['COMENT'] != "NULL")) {
-        $parts = explode(',', $value['COMENT']);
-        if (isset($parts[0])) {
-          $make = $parts[0];
-        }
-        if (isset($parts[1])) {
-          $model = $parts[1];
-        }
-        if (isset($parts[2])) {
-          $engine = $parts[2];
-        }
-        if (isset($parts[3])) {
-          $color = $parts[3];
-        }
-      }
-
-
-      if ($value['ID'] != "") {
-
-        $value['YEAR'] = $year;
-        $value['CAPACITY'] = $capacity;
-        $value['POWER'] = $power;
-        $value['HORSEPOWER'] = $horsepower;
-        $value['ENGCODE'] = $enginecode;
-
-        $output_csv_data['sku'] = $value['ID'];
-        $output_csv_data['name'] = $value['DENUMIRE'];
-        $output_csv_data['price'] = $value['PRET_LISTA'];
-        $output_csv_data['qty'] = $value['STOC_CURENT'];
-        $output_csv_data['year'] = $value['YEAR'];
-        $output_csv_data['capacity'] = $value['CAPACITY'];
-        $output_csv_data['power'] = $value['POWER'];
-        $output_csv_data['horsepower'] = $value['HORSEPOWER'];
-        $output_csv_data['engcode'] = $value['ENGCODE'];
-        $output_csv_data['is_in_stock'] = $value['PRODUS_ACTIV'];
-
-        //THIS WILL BE THE DEFAULT VALUES HARDCODED BECAUSE THEY DONT EXIST
-
-        $output_csv_data['attribute_set'] = 'Bloc Motor';
-        $output_csv_data['type'] = 'simple';
-        $output_csv_data['store'] = 'admin';
-        $output_csv_data['att_eby_title'] = $value['DENUMIRE'];
-        $output_csv_data['att_eby_subtitle'] = $value['DENUMIRE'] . ' Subtitle';
-        $output_csv_data['description'] = $value['EXPL'];
-        $output_csv_data['manage_stock'] = 1;
-        $output_csv_data['use_config_manage_stock'] = 1;
-        $output_csv_data['status'] = 1;
-        //Override Manage Stock And Config Manage Stock
-        // If Product Is Not In Hydra Stock
-        if (($value['STOC_CURENT'] == 0) || ($value['STOC_CURENT'] == NULL)) {
-          $output_csv_data['manage_stock'] = 0;
-          $output_csv_data['use_config_manage_stock'] = 0;
-          $output_csv_data['status'] = 3;
-        }
-
-        $output_csv_data['visibility'] = 'Catalog, Search';
-        $output_csv_data['tax_class_id'] = 'None';
-        $output_csv_data['thumbnail'] = '';
-        $output_csv_data['small_image'] = '';
-        $output_csv_data['image'] = '';
-        $output_csv_data['media_gallery'] = '';
-        $output_csv_data['att_amz_title'] = '';
-        $output_csv_data['decor_type'] = $this->randomizeCustomAttributeValues('decor_type');
-        $output_csv_data['marca_masina'] = $this->randomizeCustomAttributeValues('marca_masina');
-        $output_csv_data['categories'] = $value['CATEGORY_BELONGING'];
-        $output_csv_data['make'] = $make;
-        $output_csv_data['model'] = $model;
-        $output_csv_data['engine'] = $engine;
-        $output_csv_data['carcolor'] = $color;
-
-        $this->output_data[] = $output_csv_data;
-      }
-    }
-    return $this;
-  }
+//  function expandFields($data_array) {
+//
+//    foreach ($data_array as $key => $value) {
+//
+//      $year = "NULL";
+//      $capacity = "NULL";
+//      $power = "NULL";
+//      $horsepower = "NULL";
+//      $enginecode = "NULL";
+//      $make = "NULL";
+//      $model = "NULL";
+//      $engine = "NULL";
+//      $color = "NULL";
+//
+//      if (isset($value['EXPL'])) {
+//        $yearmatch = preg_match("(((19|20)\d{2})|((19|20)\d{2}\.))", $value['EXPL'], $yearmatches);
+//        if ($yearmatch) {
+//          $year = substr($yearmatches[0], 0, 4);
+//        }
+//
+//        $capacitymatch = preg_match("([0-9]{3,5}CC)", $value['EXPL'], $capacitymatches);
+//        if ($capacitymatch) {
+//
+//          $capacity_string = $capacitymatches[0];
+//          $capacity = substr($capacity_string, 0, -2);
+//        }
+//
+//        $powermatch = preg_match("([0-9]{1,4}KW)", $value['EXPL'], $powermatches);
+//        if ($powermatch) {
+//          $power_string = $powermatches[0];
+//          $power = substr($power_string, 0, -2);
+//        }
+//
+//        $horsepowermatch = preg_match("([0-9]{1,4}CP)", $value['EXPL'], $horsepowermatches);
+//        if ($horsepowermatch) {
+//          $horsepower_string = $horsepowermatches[0];
+//          $horsepower = substr($horsepower_string, 0, -2);
+//        }
+//
+//        $enginecodematch = preg_match("([A-Z0-9]{12,25})", $value['EXPL'], $enginecodematches);
+//        if ($enginecodematch) {
+//          $enginecode = $enginecodematches[0];
+//        }
+//      }
+//
+//      if (isset($value['COMENT']) && ($value['COMENT'] != "NULL")) {
+//        $parts = explode(',', $value['COMENT']);
+//        if (isset($parts[0])) {
+//          $make = $parts[0];
+//        }
+//        if (isset($parts[1])) {
+//          $model = $parts[1];
+//        }
+//        if (isset($parts[2])) {
+//          $engine = $parts[2];
+//        }
+//        if (isset($parts[3])) {
+//          $color = $parts[3];
+//        }
+//      }
+//
+//
+//      if ($value['ID'] != "") {
+//
+//        $value['YEAR'] = $year;
+//        $value['CAPACITY'] = $capacity;
+//        $value['POWER'] = $power;
+//        $value['HORSEPOWER'] = $horsepower;
+//        $value['ENGCODE'] = $enginecode;
+//
+//        $output_csv_data['sku'] = $value['ID'];
+//        $output_csv_data['name'] = $value['DENUMIRE'];
+//        $output_csv_data['price'] = $value['PRET_LISTA'];
+//        $output_csv_data['qty'] = $value['STOC_CURENT'];
+//        $output_csv_data['year'] = $value['YEAR'];
+//        $output_csv_data['capacity'] = $value['CAPACITY'];
+//        $output_csv_data['power'] = $value['POWER'];
+//        $output_csv_data['horsepower'] = $value['HORSEPOWER'];
+//        $output_csv_data['engcode'] = $value['ENGCODE'];
+//        $output_csv_data['is_in_stock'] = $value['PRODUS_ACTIV'];
+//
+//        //THIS WILL BE THE DEFAULT VALUES HARDCODED BECAUSE THEY DONT EXIST
+//
+//        $output_csv_data['attribute_set'] = 'Bloc Motor';
+//        $output_csv_data['type'] = 'simple';
+//        $output_csv_data['store'] = 'admin';
+//        $output_csv_data['att_eby_title'] = $value['DENUMIRE'];
+//        $output_csv_data['att_eby_subtitle'] = $value['DENUMIRE'] . ' Subtitle';
+//        $output_csv_data['description'] = $value['EXPL'];
+//        $output_csv_data['manage_stock'] = 1;
+//        $output_csv_data['use_config_manage_stock'] = 1;
+//        $output_csv_data['status'] = 1;
+//        //Override Manage Stock And Config Manage Stock
+//        // If Product Is Not In Hydra Stock
+//        if (($value['STOC_CURENT'] == 0) || ($value['STOC_CURENT'] == NULL)) {
+//          $output_csv_data['manage_stock'] = 0;
+//          $output_csv_data['use_config_manage_stock'] = 0;
+//          $output_csv_data['status'] = 3;
+//        }
+//
+//        $output_csv_data['visibility'] = 'Catalog, Search';
+//        $output_csv_data['tax_class_id'] = 'None';
+//        $output_csv_data['thumbnail'] = '';
+//        $output_csv_data['small_image'] = '';
+//        $output_csv_data['image'] = '';
+//        $output_csv_data['media_gallery'] = '';
+//        $output_csv_data['att_amz_title'] = '';
+//        $output_csv_data['capacitate_motor'] = $this->randomizeCustomAttributeValues('motorizare');
+//        $output_csv_data['marca_masina'] = $this->randomizeCustomAttributeValues('marca_masina');
+//        $output_csv_data['categories'] = $value['CATEGORY_BELONGING'];
+//        $output_csv_data['make'] = $make;
+//        $output_csv_data['model'] = $model;
+//        $output_csv_data['engine'] = $engine;
+//        $output_csv_data['carcolor'] = $color;
+//
+//        $this->output_data[] = $output_csv_data;
+//      }
+//    }
+//    return $this;
+//  }
 
   /**
    * Converts the EXPL field of each item into different values and outputs
@@ -268,15 +268,15 @@ class PbcMagmi {
 
     foreach ($data_array as $key => $value) {
 
-      $year = "NULL";
-      $capacity = "NULL";
-      $power = "NULL";
-      $horsepower = "NULL";
-      $enginecode = "NULL";
-      $make = "NULL";
-      $model = "NULL";
-      $engine = "NULL";
-      $color = "NULL";
+      $year = "";
+      $capacity = "";
+      $power = "";
+      $horsepower = "";
+      $enginecode = "";
+      $make = "";
+      $model = "";
+      $engine = "";
+      $color = "";
 
       if (isset($value['EXPL'])) {
         $yearmatch = preg_match("(((19|20)\d{2})|((19|20)\d{2}\.))", $value['EXPL'], $yearmatches);
@@ -368,35 +368,35 @@ class PbcMagmi {
       switch ($integer_capacity) {
 
         case $integer_capacity < 1001:
-          $magento_row['decor_type'] = "-1000 cmc";
+          $magento_row['capacitate_motor'] = "-1000 cmc";
           break;
         case $integer_capacity < 1201:
-          $magento_row['decor_type'] = "1000-1200 cmc";
+          $magento_row['capacitate_motor'] = "1000-1200 cmc";
           break;
         case $integer_capacity < 1401:
-          $magento_row['decor_type'] = "1200-1400 cmc";
+          $magento_row['capacitate_motor'] = "1200-1400 cmc";
           break;
         case $integer_capacity < 1601:
-          $magento_row['decor_type'] = "1200-1600 cmc";
+          $magento_row['capacitate_motor'] = "1200-1600 cmc";
           break;
         case $integer_capacity < 1801:
-          $magento_row['decor_type'] = "1600-8000 cmc";
+          $magento_row['capacitate_motor'] = "1600-8000 cmc";
           break;
         case $integer_capacity < 2001:
-          $magento_row['decor_type'] = "1800-2000 cmc";
+          $magento_row['capacitate_motor'] = "1800-2000 cmc";
           break;
         case $integer_capacity < 2801:
-          $magento_row['decor_type'] = "2000-2800 cmc";
+          $magento_row['capacitate_motor'] = "2000-2800 cmc";
           break;
         default:
-          $magento_row['decor_type'] = "2800+ cmc";
+          $magento_row['capacitate_motor'] = "2800+ cmc";
           break;
       }
 
 
 
 
-//        $magento_row['decor_type'] = $item['CAPACITY'];
+
       $magento_row['power'] = $item['POWER'];
       $magento_row['horsepower'] = $item['HORSEPOWER'];
       $magento_row['engcode'] = $item['ENGCODE'];
@@ -427,7 +427,7 @@ class PbcMagmi {
       $magento_row['categories'] = $item['CATEGORY_BELONGING'];
       $magento_row['marca_masina'] = $item['MARCA_MASINA'];
       $magento_row['model_auto'] = $item['MODEL'];
-      $magento_row['engine'] = $item['ENGINE'];
+      $magento_row['motorizare'] = $item['ENGINE'];
       $magento_row['carcolor'] = $item['CARCOLOR'];
 
       $output_array[] = $magento_row;

@@ -18,7 +18,7 @@ $config = array(
 
 define("FTP_SERVER","timedudeapi.cust21.reea.net");
 define("FTP_USERNAME","devel");
-define("FTP_USER_PASS","n4d8nDa");
+define("FTP_USER_PASS","n4d8nD");
 define("FTP_FILEPATH","www/timedudeapi.cust21.reea.net");
 
 /**
