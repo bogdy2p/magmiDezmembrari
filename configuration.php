@@ -18,14 +18,14 @@ $config = array(
 
 define("FTP_SERVER","timedudeapi.cust21.reea.net");
 define("FTP_USERNAME","devel");
-define("FTP_USER_PASS","n4d8nD");
+define("FTP_USER_PASS","M8rjf5");
 define("FTP_FILEPATH","www/timedudeapi.cust21.reea.net");
 
 /**
  * Script required Constants
  */
 define("WEB_ROOT_DIRECTORY", "/var/www/html/");
-define("MAGENTO_BASE_URL", WEB_ROOT_DIRECTORY . "magentostudy/");
+define("MAGENTO_BASE_URL", WEB_ROOT_DIRECTORY . "magentoclean/");
 define("MAGMI_BASE_URL", MAGENTO_BASE_URL . "magimprt/");
 define("MAGENTO_VAR_IMPORT_FOLDER", MAGENTO_BASE_URL . "var/import/");
 define("INPUTS_FOLDER", __DIR__ . '/logs/inputs_from_ftp/');

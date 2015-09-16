@@ -358,7 +358,13 @@ class PbcMagmi {
     $array_piese = $this->array_piese;
     foreach ($array_piese as $item) {
       $magento_row['sku'] = $item['ID'];
-      $magento_row['name'] = $item['DENUMIRE'];
+
+
+      $denumire_cu_model = $item['DENUMIRE'] . ' - ' . $item['MODEL'];
+
+
+//      $magento_row['name'] = $item['DENUMIRE'];
+      $magento_row['name'] = $denumire_cu_model;
       $magento_row['price'] = $item['PRET_LISTA'];
       $magento_row['qty'] = $item['STOC_CURENT'];
       $magento_row['year'] = $item['YEAR'];
@@ -380,7 +386,7 @@ class PbcMagmi {
           $magento_row['capacitate_motor'] = "1200-1600 cmc";
           break;
         case $integer_capacity < 1801:
-          $magento_row['capacitate_motor'] = "1600-8000 cmc";
+          $magento_row['capacitate_motor'] = "1600-1800 cmc";
           break;
         case $integer_capacity < 2001:
           $magento_row['capacitate_motor'] = "1800-2000 cmc";
@@ -423,7 +429,7 @@ class PbcMagmi {
       $magento_row['small_image'] = '';
       $magento_row['image'] = '';
       $magento_row['media_gallery'] = '';
-      $magento_row['att_amz_title'] = '';
+      $magento_row['att_amz_title'] = 'amz_title';
       $magento_row['categories'] = $item['CATEGORY_BELONGING'];
       $magento_row['marca_masina'] = $item['MARCA_MASINA'];
       $magento_row['model_auto'] = $item['MODEL'];
@@ -703,9 +709,14 @@ class PbcMagmi {
 
     foreach ($this->array_piese as $piesa) {
       foreach ($this->array_masini as $date_masina) {
-        if ($piesa['PARENT_ID'] == $date_masina['ID']) {
-          $piesa['EXPL'] = $date_masina['EXPL'];
-          $piesa['COMENT'] = $date_masina['COMENT'];
+        if (isset($date_masina['ID'])) {
+          if ($piesa['PARENT_ID'] == $date_masina['ID']) {
+            $piesa['EXPL'] = $date_masina['EXPL'];
+            $piesa['COMENT'] = $date_masina['COMENT'];
+          }
+        }
+        else{
+          $this->errors[] = $date_masina;
         }
       }
       $array_piese_modified[] = $piesa;
